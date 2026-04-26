@@ -7,6 +7,7 @@ This package contains the core data structures, Zod schemas, and TypeScript inte
 We use **Zod** for runtime schema validation and to infer TypeScript types. This ensures data integrity between the frontend, backend, and database.
 
 ### Key Technologies
+
 - **Zod**: Validation and type inference.
 - **UUID v7**: Used for all unique identifiers for better database performance and sortability.
 
@@ -15,15 +16,19 @@ We use **Zod** for runtime schema validation and to infer TypeScript types. This
 ## Core Interfaces
 
 ### 1. Products (`products.ts`)
+
 Defines the global and private product catalog.
+
 - **`Product`**: Represents a generic packaged food item.
-- **Hybrid Model**: 
-    - `isGlobal: true`: Available to all users.
-    - `ownerId: string`: Private product created by a specific user for their own catalog.
+- **Hybrid Model**:
+  - `isGlobal: true`: Available to all users.
+  - `ownerId: string`: Private product created by a specific user for their own catalog.
 - **Metadata**: Includes `barcode`, `category`, and shelf-life rules (`daysBeforeOpen`, `daysAfterOpen`).
 
 ### 2. Inventory (`inventory.ts`)
+
 Manages the user's actual stock (the "Digital Fridge").
+
 - **`InventoryItem`**: A specific instance of a product in a user's fridge.
 - **Snapshot Pattern**: Uses `displayName` to store a string snapshot of the product name for faster UI rendering without complex joins.
 - **Tracking**: Tracks `openedAt`, `expiryDate`, and `location` (fridge, freezer, etc.).
@@ -31,7 +36,9 @@ Manages the user's actual stock (the "Digital Fridge").
 - **`FoodNotification`**: Structure for alerts regarding expiring items.
 
 ### 3. Scans (`scans.ts`)
+
 Handles the interaction with barcode scanning features.
+
 - **`BarcodeScanResult`**: The response structure after scanning a barcode, containing the original barcode string and the matched `Product` (if found).
 
 ---
