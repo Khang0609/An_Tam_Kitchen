@@ -1,5 +1,4 @@
-import { Product, InventoryItem } from '@repo/types';
-
+import { Product, InventoryItem, User } from '@repo/types';
 /**
  * Base Repository interface for standard CRUD operations
  */
@@ -24,6 +23,13 @@ export interface IProductRepository extends IBaseRepository<Product, Omit<Produc
  * Inventory Repository Interface
  */
 export interface IInventoryRepository extends IBaseRepository<InventoryItem, Omit<InventoryItem, 'id' | 'createdAt' | 'updatedAt'>, Partial<InventoryItem>> {
-  findByUser(userId: string): Promise<InventoryItem[]>;
+  findAllByUserId(userId: string): Promise<InventoryItem[]>;
   findByProduct(productId: string): Promise<InventoryItem[]>;
+}
+
+/**
+ * User Repository Interface
+ */
+export interface IUserRepository extends IBaseRepository<User, Omit<User, 'id' | 'createdAt' | 'updatedAt'>, Partial<User>> {
+  findByEmail(email: string): Promise<User | null>;
 }

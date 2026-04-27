@@ -1,5 +1,6 @@
-import { Product, InventoryItem } from '@repo/types';
-import { IProductRepository, IInventoryRepository } from './interfaces';
+import { Product, InventoryItem, User } from '@repo/types';
+import { mockDatabase } from '@repo/database';
+import { IProductRepository, IInventoryRepository, IUserRepository } from './interfaces';
 
 /**
  * Mock Product Repository
@@ -55,7 +56,7 @@ export class MockProductRepository implements IProductRepository {
  * Mock Inventory Repository
  */
 export class MockInventoryRepository implements IInventoryRepository {
-  private inventory: InventoryItem[] = [];
+  private inventory: InventoryItem[] = mockDatabase.inventory;
 
   async create(data: Omit<InventoryItem, 'id' | 'createdAt' | 'updatedAt'>): Promise<InventoryItem> {
     const newItem: InventoryItem = {
@@ -90,7 +91,7 @@ export class MockInventoryRepository implements IInventoryRepository {
     return this.inventory.length < initialLength;
   }
 
-  async findByUser(userId: string): Promise<InventoryItem[]> {
+  async findAllByUserId(userId: string): Promise<InventoryItem[]> {
     return this.inventory.filter(item => item.userId === userId);
   }
 
@@ -98,3 +99,49 @@ export class MockInventoryRepository implements IInventoryRepository {
     return this.inventory.filter(item => item.productId === productId);
   }
 }
+
+/**
+ * Mock User Repository
+ */
+export class MockUserRepository implements IUserRepository {
+  private users: User[] = mockDatabase.users;
+
+  async create(data: Omit<User, 'id' | 'createdAt' | 'updatedAt'>): Promise<User> {
+    const newUser: User = {
+      ...data,
+      id: crypto.randomUUID(),
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    } as User;
+    this.users.push(newUser);
+    return newUser;
+  }
+
+  async findById(id: string): Promise<User | null> {
+    return this.users.find(u => u.id === id) || null;
+  }
+
+  async findAll(): Promise<User[]> {
+    return this.users;
+  }
+
+  async update(id: string, data: Partial<User>): Promise<User> {
+    const index = this.users.findIndex(u => u.id === id);
+    if (index === -1) throw new Error('User not found');
+    
+    this.users[index] = { ...this.users[index], ...data, updatedAt: new Date() };
+    return this.users[index];
+  }
+
+  async delete(id: string): Promise<boolean> {
+    const initialLength = this.users.length;
+    this.users = this.users.filter(u => u.id !== id);
+    return this.users.length < initialLength;
+  }
+
+  async findByEmail(email: string): Promise<User | null> {
+    return this.users.find(u => u.email === email) || null;
+  }
+}
+
+export const userRepository = new MockUserRepository();

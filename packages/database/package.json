@@ -10,6 +10,7 @@
     "db:studio": "prisma studio"
   },
   "dependencies": {
+    "@repo/types": "workspace:*",
     "@prisma/client": "^7.8.0"
   },
   "devDependencies": {

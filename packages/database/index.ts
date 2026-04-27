@@ -1,6 +1,7 @@
 // import { PrismaClient } from '@prisma/client'
 
 // export * from '@prisma/client'
+export * from './mock'
 
 // const globalForPrisma = globalThis as unknown as { prisma: PrismaClient }
 
