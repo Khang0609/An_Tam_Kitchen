@@ -12,6 +12,16 @@
         "PORT"
       ]
     },
+    "vercel-build": {
+      "dependsOn": ["^build"],
+      "env": [
+        "DATABASE_URL",
+        "DIRECT_URL",
+        "NODE_ENV",
+        "JWT_SECRET",
+        "PORT"
+      ]
+    },
     "lint": {
       "dependsOn": ["^lint"]
     },
