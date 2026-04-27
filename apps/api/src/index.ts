@@ -10,7 +10,23 @@ dotenv.config();
 const app: Application = express();
 const port = process.env.PORT || 3001;
 
-app.use(cors());
+// ─── CORS ────────────────────────────────────────────────────────────────────
+const allowedOrigins = [
+  'http://localhost:3000',                       // Next.js dev
+  process.env.FRONTEND_URL,                      // Vercel production URL
+].filter(Boolean) as string[];
+
+app.use(cors({
+  origin: (origin, callback) => {
+    // Allow requests with no origin (mobile apps, curl, server-to-server)
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error(`Origin ${origin} not allowed by CORS`));
+    }
+  },
+  credentials: true,  // Required for HttpOnly cookie auth
+}));
 app.use(express.json());
 app.use(cookieParser());
 
