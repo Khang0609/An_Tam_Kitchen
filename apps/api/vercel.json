@@ -1,19 +1,13 @@
 {
   "version": 2,
-  "functions": {
-    "index.ts": {
-      "memory": 1024,
-      "maxDuration": 10
-    }
-  },
   "rewrites": [
     {
       "source": "/api/(.*)",
-      "destination": "/index.ts"
+      "destination": "/src/index.ts"
     },
     {
       "source": "/(.*)",
-      "destination": "/index.ts"
+      "destination": "/src/index.ts"
     }
   ]
 }
