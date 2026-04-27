@@ -1,4 +1,4 @@
-import { Router } from 'express';
+import express, { Router } from 'express';
 import { inventoryController } from '@/container';
 import { authenticate } from '@/middleware/auth.middleware';
 import {
@@ -10,7 +10,7 @@ import {
 } from '@/validation/inventory.validation';
 
 
-const router: Router = Router();
+const router: Router = express.Router();
 
 // Áp dụng xác thực cho tất cả các route trong inventory
 router.use(authenticate);

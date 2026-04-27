@@ -1,4 +1,4 @@
-import { Router } from 'express';
+import express, { Router } from 'express';
 import { productController } from '@/container';
 import { authenticate } from '@/middleware/auth.middleware';
 import {
@@ -12,7 +12,7 @@ import {
 
 // ─── Router ───────────────────────────────────────────────────────────────────
 
-const router: Router = Router();
+const router: Router = express.Router();
 
 /**
  * GET /products
