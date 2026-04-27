@@ -1,8 +1,7 @@
 import { Request, Response } from "express";
 import argon2 from "argon2";
 import jwt from "jsonwebtoken";
-// import { prisma } from '@repo/database';
-import { userRepository } from "@repo/repositories";
+import { userRepository } from "@/container";
 import { UserSchema } from "@repo/types";
 import { z } from "zod";
 
@@ -10,8 +9,7 @@ const JWT_SECRET = process.env.JWT_SECRET || "fallback-secret-for-dev";
 const REFRESH_SECRET =
   process.env.REFRESH_SECRET || "fallback-refresh-secret-for-dev";
 
-// Extend the original UserSchema for sign up and login if necessary,
-// though we can just pick or create new ones for request body validation.
+
 const SignupSchema = UserSchema.pick({
   email: true,
   password: true,
@@ -27,13 +25,10 @@ export const signup = async (req: Request, res: Response): Promise<any> => {
   try {
     const parsedBody = SignupSchema.parse(req.body);
 
-    //     const existingUser = await prisma.user.findUnique({
-    //   where: { email: parsedBody.email },
-    // });
     const existingUser = await userRepository.findByEmail(parsedBody.email);
 
     if (existingUser) {
-      // Return generic error for security
+      // Generic error để tránh user enumeration
       return res
         .status(400)
         .json({ error: "Signup failed. User may already exist." });
@@ -68,7 +63,6 @@ export const login = async (req: Request, res: Response): Promise<any> => {
     const user = await userRepository.findByEmail(parsedBody.email);
 
     if (!user) {
-      // Generic error
       return res.status(401).json({ error: "Invalid credentials" });
     }
 
@@ -85,22 +79,21 @@ export const login = async (req: Request, res: Response): Promise<any> => {
       expiresIn: "7d",
     });
 
-    // Save refresh token in DB
+    // Lưu refresh token vào DB
     await userRepository.update(user.id, { refreshToken });
 
-    // Set cookies
     res.cookie("accessToken", accessToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "strict",
-      maxAge: 15 * 60 * 1000, // 15 mins
+      maxAge: 15 * 60 * 1000,
     });
 
     res.cookie("refreshToken", refreshToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "strict",
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+      maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
     return res.status(200).json({ message: "Login successful" });
@@ -120,14 +113,13 @@ export const logout = async (req: Request, res: Response): Promise<any> => {
     const refreshToken = req.cookies.refreshToken;
 
     if (refreshToken) {
-      // Decode without verifying just to get user ID, or verify it to be safe
       try {
         const decoded = jwt.verify(refreshToken, REFRESH_SECRET) as {
           userId: string;
         };
         await userRepository.update(decoded.userId, { refreshToken: null });
-      } catch (err) {
-        // If token is invalid/expired, we just ignore DB update and clear cookies
+      } catch (_err) {
+        // Token không hợp lệ/hết hạn → vẫn xoá cookie, bỏ qua lỗi DB
       }
     }
 

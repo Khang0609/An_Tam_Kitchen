@@ -136,6 +136,9 @@ importers:
       '@repo/types':
         specifier: workspace:*
         version: link:../types
+      dotenv:
+        specifier: ^17.4.2
+        version: 17.4.2
     devDependencies:
       '@types/node':
         specifier: ^25.6.0
@@ -155,6 +158,9 @@ importers:
       '@repo/types':
         specifier: workspace:*
         version: link:../types
+      prisma:
+        specifier: ^7.8.0
+        version: 7.8.0(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(react-dom@19.2.5(react@19.2.5))(react@19.2.5)(typescript@6.0.3)
     devDependencies:
       '@repo/typescript-config':
         specifier: workspace:*

@@ -5,8 +5,9 @@
   "main": "./index.ts",
   "types": "./index.ts",
   "dependencies": {
+    "@repo/database": "workspace:*",
     "@repo/types": "workspace:*",
-    "@repo/database": "workspace:*"
+    "prisma": "^7.8.0"
   },
   "devDependencies": {
     "@repo/typescript-config": "workspace:*",

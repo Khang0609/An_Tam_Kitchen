@@ -1,6 +1,5 @@
 import { Router } from 'express';
-import { InventoryRepository } from '@repo/repositories';
-import { InventoryController } from '@/controllers/inventory.controller';
+import { inventoryController } from '@/container';
 import {
   validateBody,
   validateParams,
@@ -9,10 +8,6 @@ import {
   InventoryItemIdParamSchema,
 } from '@/validation/inventory.validation';
 
-// ─── Dependency Injection ─────────────────────────────────────────────────────
-// Hiện tại InventoryRepository đang sử dụng Mock Implementation
-const inventoryRepository = new InventoryRepository();
-const inventoryController = new InventoryController(inventoryRepository);
 
 const router: Router = Router();
 

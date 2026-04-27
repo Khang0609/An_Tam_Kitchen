@@ -1,0 +1,35 @@
+import { prisma } from '@repo/database';
+import {
+  PrismaProductRepository,
+  PrismaInventoryRepository,
+  PrismaUserRepository,
+  MockProductRepository,
+  MockInventoryRepository,
+  MockUserRepository,
+  IProductRepository,
+  IInventoryRepository,
+  IUserRepository
+} from '@repo/repositories';
+import { ProductController } from './controllers/product.controller';
+import { InventoryController } from './controllers/inventory.controller';
+
+// ─── Configuration ───────────────────────────────────────────────────────────
+const useMock = process.env.USE_MOCK_DATA === 'true';
+
+// ─── Repositories ────────────────────────────────────────────────────────────
+export const productRepository: IProductRepository = useMock
+  ? new MockProductRepository()
+  : new PrismaProductRepository(prisma);
+
+export const inventoryRepository: IInventoryRepository = useMock
+  ? new MockInventoryRepository()
+  : new PrismaInventoryRepository(prisma);
+
+export const userRepository: IUserRepository = useMock
+  ? new MockUserRepository()
+  : new PrismaUserRepository(prisma);
+
+// ─── Controllers ─────────────────────────────────────────────────────────────
+// Lưu ý: Chúng ta inject repository vào controller tại đây.
+export const productController = new ProductController(productRepository);
+export const inventoryController = new InventoryController(inventoryRepository);

@@ -1,60 +1,49 @@
-import { InventoryItem } from '@repo/types';
-import { mockDatabase } from '@repo/database';
+import type { PrismaClient } from '@repo/database';
 import { IInventoryRepository } from './interfaces';
+import { InventoryItem } from '@repo/types';
 
 /**
- * Repository implementation for Inventory using a Mock in-memory database.
- * (Sử dụng tạm thời thay cho Prisma khi database chưa sẵn sàng)
+ * Prisma implementation of IInventoryRepository.
+ * Thay thế InventoryRepository (mock) bằng thao tác DB thật.
  */
-export class InventoryRepository implements IInventoryRepository {
-  private inventory = mockDatabase.inventory;
+export class PrismaInventoryRepository implements IInventoryRepository {
+  constructor(private readonly db: PrismaClient) {}
 
   async create(data: Omit<InventoryItem, 'id' | 'createdAt' | 'updatedAt'>): Promise<InventoryItem> {
-    const newItem: InventoryItem = {
-      ...data,
-      id: crypto.randomUUID(),
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    } as InventoryItem;
-    
-    this.inventory.push(newItem);
-    return newItem;
+    const item = await this.db.inventoryItem.create({ data });
+    return item as unknown as InventoryItem;
   }
 
   async findById(id: string): Promise<InventoryItem | null> {
-    return this.inventory.find(item => item.id === id) || null;
+    const item = await this.db.inventoryItem.findUnique({ where: { id } });
+    return item as unknown as InventoryItem | null;
   }
 
   async findAll(): Promise<InventoryItem[]> {
-    return this.inventory;
+    const items = await this.db.inventoryItem.findMany();
+    return items as unknown as InventoryItem[];
   }
 
   async update(id: string, data: Partial<InventoryItem>): Promise<InventoryItem> {
-    const index = this.inventory.findIndex(item => item.id === id);
-    if (index === -1) throw new Error(`Không tìm thấy vật phẩm với id ${id}`);
-    
-    this.inventory[index] = { 
-      ...this.inventory[index], 
-      ...data, 
-      updatedAt: new Date() 
-    };
-    return this.inventory[index];
+    const item = await this.db.inventoryItem.update({
+      where: { id },
+      data,
+    });
+    return item as unknown as InventoryItem;
   }
 
   async delete(id: string): Promise<boolean> {
-    const index = this.inventory.findIndex(item => item.id === id);
-    if (index !== -1) {
-      this.inventory.splice(index, 1);
-      return true;
-    }
-    return false;
+    await this.db.inventoryItem.delete({ where: { id } });
+    return true;
   }
 
   async findAllByUserId(userId: string): Promise<InventoryItem[]> {
-    return this.inventory.filter(item => item.userId === userId);
+    const items = await this.db.inventoryItem.findMany({ where: { userId } });
+    return items as unknown as InventoryItem[];
   }
 
   async findByProduct(productId: string): Promise<InventoryItem[]> {
-    return this.inventory.filter(item => item.productId === productId);
+    const items = await this.db.inventoryItem.findMany({ where: { productId } });
+    return items as unknown as InventoryItem[];
   }
 }

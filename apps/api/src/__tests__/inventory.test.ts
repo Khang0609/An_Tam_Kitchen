@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { InventoryRepository } from '@repo/repositories';
+import { IInventoryRepository, MockInventoryRepository } from '@repo/repositories';
 import { InventoryItem } from '@repo/types';
 import { mockDatabase } from '@repo/database';
 
@@ -8,13 +8,14 @@ import { mockDatabase } from '@repo/database';
  * Kiểm thử logic của bản Mock Implementation.
  */
 describe('InventoryRepository (Mock Implementation)', () => {
-  let inventoryRepo: InventoryRepository;
+  let inventoryRepo: IInventoryRepository;
 
   beforeEach(() => {
     // Reset dữ liệu trong mock database trước mỗi test case
     mockDatabase.inventory = [];
-    inventoryRepo = new InventoryRepository();
+    inventoryRepo = new MockInventoryRepository();
   });
+
 
   // ─── Case 1: Create works with valid data ──────────────────────────────────
   

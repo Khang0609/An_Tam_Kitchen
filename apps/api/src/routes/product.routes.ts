@@ -1,6 +1,5 @@
 import { Router } from 'express';
-import { MockProductRepository } from '@repo/repositories';
-import { ProductController } from '@/controllers/product.controller';
+import { productController } from '@/container';
 import {
   validateBody,
   validateParams,
@@ -9,17 +8,6 @@ import {
   ProductIdParamSchema,
 } from '@/validation/product.validation';
 
-// ─── Dependency Injection ─────────────────────────────────────────────────────
-//
-// Đây là "Composition Root" cho Product module.
-// Trong production, thay MockProductRepository bằng PrismaProductRepository.
-//
-//   import { PrismaProductRepository } from '@repo/repositories';
-//   import { prisma } from '@repo/database';
-//   const productRepository = new PrismaProductRepository(prisma);
-//
-const productRepository = new MockProductRepository();
-const productController = new ProductController(productRepository);
 
 // ─── Router ───────────────────────────────────────────────────────────────────
 
@@ -35,7 +23,6 @@ router.get('/', productController.getAll);
 
 /**
  * GET /products/:id
- * Validate UUID v7 param trước khi vào controller.
  */
 router.get(
   '/:id',
@@ -45,9 +32,6 @@ router.get(
 
 /**
  * POST /products
- * Trong production nên bảo vệ bằng middleware xác thực (JWT) và phân quyền admin.
- *
- * Ví dụ: router.post('/', authenticate, requireAdmin, ...)
  */
 router.post(
   '/',
