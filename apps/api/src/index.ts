@@ -8,7 +8,7 @@ import inventoryRoutes from './routes/inventory.routes';
 
 dotenv.config();
 
-const app: Express = express();
+const app = express() as any;
 const port = process.env.PORT || 3001;
 
 // ─── CORS ────────────────────────────────────────────────────────────────────
