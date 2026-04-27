@@ -2,10 +2,11 @@ import { z } from 'zod';
 
 // --- Base User Schema ---
 export const UserSchema = z.object({
-  id: z.number(),
+  id: z.uuidv7(),
   email: z.email(),
   name: z.string().optional(),
   password: z.string().min(8), // Only handled on the backend
+  refreshToken: z.string().nullable().optional(),
   createdAt: z.date().optional(),
   updatedAt: z.date().optional(),
 });
