@@ -3,7 +3,14 @@
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
-      "outputs": ["dist/**", ".next/**"]
+      "outputs": ["dist/**", ".next/**"],
+      "env": [
+        "DATABASE_URL",
+        "DIRECT_URL",
+        "NODE_ENV",
+        "JWT_SECRET",
+        "PORT"
+      ]
     },
     "lint": {
       "dependsOn": ["^lint"]
