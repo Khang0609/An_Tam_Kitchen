@@ -128,7 +128,7 @@ export function AddFoodForm() {
 
   return (
     <form
-      className="rounded-3xl border bg-background p-4 shadow-sm sm:p-6"
+      className="rounded-3xl border bg-background p-5 shadow-sm sm:p-6"
       onSubmit={handleSubmit(onSubmit)}
     >
       {errors.root?.message ? (
@@ -288,7 +288,7 @@ export function AddFoodForm() {
           </Link>
         </Button>
 
-        <div className="flex flex-col gap-3 sm:flex-row">
+        <div className="flex flex-col-reverse gap-3 sm:flex-row">
           <Button
             className="h-11 justify-center rounded-2xl"
             disabled={isSubmitting}

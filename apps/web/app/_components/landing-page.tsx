@@ -42,19 +42,19 @@ const features: Feature[] = [
   {
     title: "Ghi nhớ ngày mở nắp",
     description:
-      "Lưu ngày mở nắp, hạn dùng trên bao bì và ghi chú cần nhớ cho từng món.",
+      "Lưu ngày mở nắp, hạn dùng trên bao bì và ghi chú cần nhớ cho từng món trong một màn hình.",
     icon: CalendarDays,
   },
   {
     title: "Ưu tiên món cần dùng sớm",
     description:
-      "Sắp xếp danh sách theo trạng thái khuyến nghị để cả nhà nhìn là biết nên dùng gì trước.",
+      "Sắp xếp danh sách theo trạng thái khuyến nghị để cả nhà nhìn nhanh món nên xem trước.",
     icon: ClipboardCheck,
   },
   {
     title: "Nhắc nhở theo vị trí bảo quản",
     description:
-      "Theo dõi riêng ngăn mát, ngăn đông và nhiệt độ phòng để nhắc đúng ngữ cảnh.",
+      "Theo dõi riêng ngăn mát, ngăn đông và nhiệt độ phòng để gợi ý đúng ngữ cảnh hơn.",
     icon: BellRing,
   },
 ];
@@ -62,12 +62,12 @@ const features: Feature[] = [
 const steps = [
   {
     title: "Quét hoặc chọn sản phẩm",
-    description: "Bắt đầu từ barcode hoặc chọn nhanh món đã có trong danh sách.",
+    description: "Bắt đầu từ barcode hoặc nhập tay tên sản phẩm trong vài giây.",
     icon: ScanLine,
   },
   {
     title: "Nhập ngày mở nắp",
-    description: "Thêm hạn dùng, số lượng và vị trí bảo quản nếu cần.",
+    description: "Thêm ngày mở nắp, vị trí bảo quản và hạn dùng nếu có trên bao bì.",
     icon: CalendarDays,
   },
   {
@@ -115,20 +115,21 @@ export function LandingPage() {
 
       <main>
         <section className="border-b bg-[linear-gradient(180deg,var(--background)_0%,var(--card)_100%)]">
-          <div className="mx-auto grid max-w-7xl gap-10 px-4 py-10 sm:px-6 sm:py-14 lg:grid-cols-[0.96fr_1.04fr] lg:items-center lg:px-8 lg:py-16">
+          <div className="mx-auto grid max-w-7xl gap-9 px-4 py-9 sm:px-6 sm:py-14 lg:grid-cols-[0.94fr_1.06fr] lg:items-center lg:px-8 lg:py-16">
             <motion.div {...motionProps} className="max-w-3xl">
               <p className="inline-flex items-center gap-2 rounded-full border bg-card px-3 py-1 text-sm font-medium text-primary shadow-sm">
                 <Sparkles aria-hidden="true" className="size-4" />
                 Web demo tủ lạnh số cho gia đình
               </p>
 
-              <h1 className="mt-5 text-4xl font-semibold leading-tight tracking-normal text-foreground sm:text-5xl lg:text-6xl">
+              <h1 className="mt-5 text-3xl font-semibold leading-tight tracking-normal text-foreground sm:text-5xl lg:text-6xl">
                 Biết món nào nên dùng trước trong tủ lạnh của bạn
               </h1>
 
-              <p className="mt-5 max-w-2xl text-lg leading-8 text-muted-foreground sm:text-xl">
+              <p className="mt-5 max-w-2xl text-base leading-7 text-muted-foreground sm:text-xl sm:leading-8">
                 Bếp An Tâm giúp theo dõi thực phẩm đã mở nắp, nhắc hạn dùng và
-                giảm lãng phí trong gia đình.
+                giảm lãng phí trong gia đình mà vẫn để người dùng tự kiểm tra
+                thực phẩm trước khi sử dụng.
               </p>
 
               <div className="mt-8 flex flex-col gap-3 sm:flex-row">
@@ -153,8 +154,8 @@ export function LandingPage() {
                 </Button>
               </div>
 
-              <div className="mt-8 grid gap-3 text-sm text-muted-foreground sm:grid-cols-3">
-                {["Ngày mở nắp", "Vị trí bảo quản", "Trạng thái khuyến nghị"].map(
+              <div className="mt-7 grid gap-3 text-sm text-muted-foreground sm:grid-cols-3">
+                {["Ngày mở nắp", "Vị trí bảo quản", "Khuyến nghị tham khảo"].map(
                   (item) => (
                     <div
                       className="rounded-2xl border bg-card px-4 py-3 shadow-sm"
@@ -186,7 +187,7 @@ export function LandingPage() {
 
         <DigitalFridgeDashboard />
 
-        <section className="bg-card py-12 sm:py-16" id="features">
+        <section className="scroll-mt-20 bg-card py-12 sm:py-16" id="features">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <SectionIntro
               eyebrow="Tính năng chính"
@@ -216,7 +217,7 @@ export function LandingPage() {
           </div>
         </section>
 
-        <section className="bg-background py-12 sm:py-16" id="add-food">
+        <section className="scroll-mt-20 bg-background py-12 sm:py-16" id="add-food">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <SectionIntro
               eyebrow="3 bước sử dụng"

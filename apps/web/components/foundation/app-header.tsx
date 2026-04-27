@@ -8,9 +8,9 @@ type AppHeaderProps = {
 };
 
 const navItems = [
-  { href: "#demo", label: "Tủ lạnh" },
-  { href: "#workflow", label: "Cách hoạt động" },
-  { href: "#features", label: "Tính năng" },
+  { href: "/#digital-fridge", label: "Tủ lạnh" },
+  { href: "/#add-food", label: "Cách hoạt động" },
+  { href: "/#features", label: "Tính năng" },
 ];
 
 export function AppHeader({ className }: AppHeaderProps) {

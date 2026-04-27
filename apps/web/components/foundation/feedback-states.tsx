@@ -21,7 +21,7 @@ function StateShell({
 }: StateShellProps) {
   return (
     <Card className={cn("border-dashed bg-card/80 shadow-sm", className)}>
-      <CardContent className="flex min-h-48 flex-col items-center justify-center px-5 py-10 text-center">
+      <CardContent className="flex min-h-52 flex-col items-center justify-center px-5 py-10 text-center sm:px-8">
         <div className="mb-4 flex size-12 items-center justify-center rounded-2xl bg-accent text-accent-foreground">
           {icon}
         </div>

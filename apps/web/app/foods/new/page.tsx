@@ -14,14 +14,14 @@ export default function NewFoodPage() {
     <div className="min-h-dvh bg-card text-foreground">
       <AppHeader />
 
-      <main className="py-8 sm:py-12">
-        <div className="mx-auto grid max-w-5xl gap-6 px-4 sm:px-6 lg:grid-cols-[0.78fr_1.22fr] lg:px-8">
+      <main className="py-6 sm:py-12">
+        <div className="mx-auto grid max-w-5xl gap-5 px-4 sm:gap-6 sm:px-6 lg:grid-cols-[0.78fr_1.22fr] lg:px-8">
           <section className="lg:pt-3">
             <p className="inline-flex items-center gap-2 rounded-full border bg-background px-3 py-1 text-sm font-medium text-primary shadow-sm">
               <Plus aria-hidden={true} className="size-4" />
               Thêm thực phẩm
             </p>
-            <h1 className="mt-5 text-3xl font-semibold leading-tight tracking-normal sm:text-4xl">
+            <h1 className="mt-5 text-2xl font-semibold leading-tight tracking-normal sm:text-4xl">
               Ghi nhanh món vừa mở nắp
             </h1>
             <p className="mt-4 text-base leading-7 text-muted-foreground">

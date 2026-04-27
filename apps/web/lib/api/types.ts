@@ -18,6 +18,8 @@ export type AddFoodCategory =
 
 export type AddFoodStorageLocation = "fridge" | "freezer" | "room";
 
+export type FoodStatusSource = "backend" | "temporary_rule";
+
 export type ApiResponse<T> = {
   data?: T;
   error?: string;
@@ -35,10 +37,14 @@ export type FoodApiRecord = Partial<InventoryItem> & {
   user_id?: string;
   displayName?: string;
   display_name?: string;
+  displayCategory?: AddFoodCategory;
+  display_category?: AddFoodCategory;
   openedAt?: Date | string | null;
   opened_at?: Date | string | null;
   expiryDate?: Date | string;
   expiry_date?: Date | string;
+  hasExplicitExpiryDate?: boolean;
+  has_explicit_expiry_date?: boolean;
   createdAt?: Date | string;
   created_at?: Date | string;
   updatedAt?: Date | string;
@@ -59,15 +65,20 @@ export type FoodItemViewModel = {
   displayName: string;
   productName?: string;
   category?: FoodCategory;
+  categoryLabel: string;
   company?: string;
   barcode?: string;
   imageUrl?: string;
   openedAt?: Date | null;
   expiryDate: Date;
+  hasExplicitExpiryDate: boolean;
   location: StorageLocation;
   locationLabel: string;
   status: FoodStatus;
   statusMeta: FoodStatusMeta;
+  statusSource: FoodStatusSource;
+  statusSourceLabel: string;
+  statusExplanation: string;
   notes?: string;
   quantity?: string;
   createdAt: Date;
@@ -86,6 +97,12 @@ export type ListFoodsOptions = {
   signal?: AbortSignal;
   useMockFallback?: boolean;
   now?: Date;
+};
+
+export type GetFoodByIdOptions = ListFoodsOptions;
+
+export type GetFoodByIdResult = FoodsServiceResult & {
+  item: FoodItemViewModel | null;
 };
 
 export type CreateFoodInput = {

@@ -6,6 +6,8 @@ import type {
   CreateFoodResult,
   FoodApiRecord,
   FoodsServiceResult,
+  GetFoodByIdOptions,
+  GetFoodByIdResult,
   ListFoodsOptions,
 } from "@/lib/api/types";
 import {
@@ -66,6 +68,18 @@ export async function createFood(
     item: mapFoodApiRecordToViewModel(record, "mock", now),
     source: "mock",
     usingMockFallback: true,
+  };
+}
+
+export async function getFoodById(
+  id: string,
+  options: GetFoodByIdOptions = {}
+): Promise<GetFoodByIdResult> {
+  const result = await listFoods(options);
+
+  return {
+    ...result,
+    item: result.items.find((food) => food.id === id) ?? null,
   };
 }
 

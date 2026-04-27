@@ -13,6 +13,7 @@ import {
   SearchCheck,
   Sparkles,
 } from "lucide-react";
+import { motion, useReducedMotion } from "motion/react";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import type { ComponentType, ReactNode } from "react";
@@ -21,6 +22,7 @@ import {
   EmptyState,
   ErrorState,
   FoodStatusBadge,
+  getFoodStatusLabel,
   LoadingState,
   SectionCard,
 } from "@/components/foundation";
@@ -36,7 +38,7 @@ const filterOptions: Array<{ value: FilterValue; label: string }> = [
   { value: "all", label: "Tất cả" },
   { value: "use_soon", label: "Nên dùng sớm" },
   { value: "check", label: "Cần kiểm tra" },
-  { value: "safe", label: "Còn ổn" },
+  { value: "safe", label: "Trong mốc khuyến nghị" },
 ];
 
 const statusPriority: Record<FoodStatus, number> = {
@@ -49,6 +51,7 @@ const statusPriority: Record<FoodStatus, number> = {
 export function DigitalFridgeDashboard() {
   const { foods, isLoading, error, usingMockFallback, refresh } = useFoods();
   const [filter, setFilter] = useState<FilterValue>("all");
+  const reduceMotion = useReducedMotion();
 
   const sortedFoods = useMemo(() => {
     return [...foods].sort((a, b) => {
@@ -82,9 +85,14 @@ export function DigitalFridgeDashboard() {
     };
   }, [foods]);
 
+  const priorityFoods = useMemo(
+    () => sortedFoods.filter((food) => food.status !== "fresh"),
+    [sortedFoods]
+  );
+
   if (isLoading) {
     return (
-      <section className="bg-card py-12 sm:py-16" id="digital-fridge">
+      <section className="scroll-mt-20 bg-card py-12 sm:py-16" id="digital-fridge">
         <DashboardShell>
           <LoadingState
             description="Đang tải danh sách thực phẩm và trạng thái khuyến nghị."
@@ -97,7 +105,7 @@ export function DigitalFridgeDashboard() {
 
   if (error && foods.length === 0) {
     return (
-      <section className="bg-card py-12 sm:py-16" id="digital-fridge">
+      <section className="scroll-mt-20 bg-card py-12 sm:py-16" id="digital-fridge">
         <DashboardShell>
           <ErrorState
             description="Không tải được dữ liệu từ API hoặc mock adapter."
@@ -110,7 +118,7 @@ export function DigitalFridgeDashboard() {
   }
 
   return (
-    <section className="bg-card py-12 sm:py-16" id="digital-fridge">
+    <section className="scroll-mt-20 bg-card py-12 sm:py-16" id="digital-fridge">
       <DashboardShell>
         <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div className="max-w-3xl">
@@ -160,7 +168,7 @@ export function DigitalFridgeDashboard() {
           <StatCard
             icon={SearchCheck}
             label="Cần kiểm tra kỹ"
-            tone="sky"
+            tone="orange"
             value={stats.check}
           />
           <StatCard
@@ -208,14 +216,22 @@ export function DigitalFridgeDashboard() {
               />
             ) : (
               <div className="grid gap-4">
-                {visibleFoods.map((food) => (
-                  <FoodCard food={food} key={food.id} />
+                {visibleFoods.map((food, index) => (
+                  <FoodCard
+                    food={food}
+                    index={index}
+                    key={food.id}
+                    reduceMotion={reduceMotion}
+                  />
                 ))}
               </div>
             )}
           </SectionCard>
 
-          <ReminderPreview priorityCount={stats.priority} />
+          <ReminderPreview
+            priorityCount={stats.priority}
+            priorityFood={priorityFoods[0]}
+          />
         </div>
       </DashboardShell>
     </section>
@@ -237,12 +253,12 @@ function StatCard({
   icon: ComponentType<{ className?: string; "aria-hidden"?: boolean }>;
   label: string;
   value: number;
-  tone?: "default" | "amber" | "sky" | "emerald";
+  tone?: "default" | "amber" | "orange" | "emerald";
 }) {
   const toneClassName = {
     default: "bg-accent text-accent-foreground",
     amber: "bg-amber-50 text-amber-900",
-    sky: "bg-sky-50 text-sky-900",
+    orange: "bg-orange-50 text-orange-900",
     emerald: "bg-emerald-50 text-emerald-900",
   }[tone];
 
@@ -266,7 +282,15 @@ function StatCard({
   );
 }
 
-function FoodCard({ food }: { food: FoodItemViewModel }) {
+function FoodCard({
+  food,
+  index,
+  reduceMotion,
+}: {
+  food: FoodItemViewModel;
+  index: number;
+  reduceMotion: boolean | null;
+}) {
   const openedLabel = food.openedAt
     ? format(food.openedAt, "dd/MM/yyyy")
     : "Chưa mở nắp";
@@ -275,7 +299,16 @@ function FoodCard({ food }: { food: FoodItemViewModel }) {
     : null;
 
   return (
-    <article className="rounded-3xl border bg-card p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
+    <motion.article
+      animate={reduceMotion ? undefined : { opacity: 1, y: 0 }}
+      className="rounded-3xl border bg-card p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+      initial={reduceMotion ? undefined : { opacity: 0, y: 10 }}
+      transition={{
+        delay: Math.min(index * 0.04, 0.16),
+        duration: 0.24,
+        ease: [0.22, 1, 0.36, 1],
+      }}
+    >
       <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
         <div className="min-w-0">
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
@@ -308,16 +341,14 @@ function FoodCard({ food }: { food: FoodItemViewModel }) {
           </div>
         </div>
 
-        <Button
-          className="h-11 rounded-2xl lg:mt-0"
-          type="button"
-          variant="outline"
-        >
-          Xem chi tiết
-          <ArrowRight aria-hidden={true} className="size-4" />
+        <Button asChild className="h-11 rounded-2xl lg:mt-0" variant="outline">
+          <Link href={`/foods/${food.id}`}>
+            Xem chi tiết
+            <ArrowRight aria-hidden={true} className="size-4" />
+          </Link>
         </Button>
       </div>
-    </article>
+    </motion.article>
   );
 }
 
@@ -345,7 +376,17 @@ function InfoLine({
   );
 }
 
-function ReminderPreview({ priorityCount }: { priorityCount: number }) {
+function ReminderPreview({
+  priorityCount,
+  priorityFood,
+}: {
+  priorityCount: number;
+  priorityFood?: FoodItemViewModel;
+}) {
+  const priorityText = priorityFood
+    ? `${priorityFood.displayName} — ${getFoodStatusLabel(priorityFood.status)}`
+    : "Hiện chưa có món nào cần ưu tiên trong danh sách.";
+
   return (
     <aside className="rounded-3xl border bg-background p-5 shadow-sm">
       <div className="flex items-center gap-3">
@@ -362,13 +403,13 @@ function ReminderPreview({ priorityCount }: { priorityCount: number }) {
 
       <div className="mt-5 space-y-3">
         <div className="rounded-2xl border bg-card p-4">
-          <p className="text-sm font-medium">
-            Sữa tươi đã mở 4 ngày — nên dùng sớm
-          </p>
+          <p className="text-sm font-medium">{priorityText}</p>
         </div>
         <div className="rounded-2xl border bg-card p-4">
           <p className="text-sm font-medium">
-            Bạn có {priorityCount} món nên ưu tiên hôm nay
+            {priorityCount > 0
+              ? `Bạn có ${priorityCount} món nên xem trước hôm nay`
+              : "Các món còn lại đang ở trạng thái ít cần chú ý hơn"}
           </p>
         </div>
       </div>

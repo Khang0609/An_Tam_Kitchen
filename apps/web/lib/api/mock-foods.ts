@@ -164,9 +164,11 @@ export function addMockFoodRecord(
     userId: USER_ID,
     productId: createMockId(),
     displayName: input.name.trim(),
+    displayCategory: input.category,
     openedAt,
     expiryDate:
       parseDateInput(input.expiryDate) ?? addDays(openedAt, daysAfterOpen),
+    hasExplicitExpiryDate: Boolean(input.expiryDate),
     location: storageToApiLocation[input.storageLocation],
     quantity: "",
     notes: input.notes?.trim() || undefined,

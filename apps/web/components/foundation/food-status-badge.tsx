@@ -21,22 +21,22 @@ const statusConfig: Record<
 > = {
   safe: {
     label: "Còn trong thời gian khuyến nghị",
-    className: "border-emerald-200 bg-emerald-50 text-emerald-900",
+    className: "border-emerald-200 bg-emerald-50 text-emerald-800",
     icon: CircleCheck,
   },
   use_soon: {
     label: "Nên dùng sớm",
-    className: "border-amber-200 bg-amber-50 text-amber-900",
+    className: "border-amber-200 bg-amber-50 text-amber-800",
     icon: Clock3,
   },
   check: {
     label: "Nên kiểm tra kỹ",
-    className: "border-sky-200 bg-sky-50 text-sky-900",
+    className: "border-orange-200 bg-orange-50 text-orange-800",
     icon: SearchCheck,
   },
   avoid: {
     label: "Không nên để quá lâu",
-    className: "border-rose-200 bg-rose-50 text-rose-900",
+    className: "border-rose-200 bg-rose-50 text-rose-800",
     icon: ShieldAlert,
   },
 };
