@@ -42,7 +42,7 @@ app.get('/health', (req: any, res: any) => {
   res.json({ status: 'OK' });
 });
 
-if (process.env.NODE_ENV !== 'test') {
+if (process.env.NODE_ENV !== 'test' && !process.env.VERCEL) {
   app.listen(port, () => {
     console.log(`Server is running on http://localhost:${port}`);
   });
