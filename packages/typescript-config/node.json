@@ -1,0 +1,11 @@
+{
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "display": "Node.js",
+  "extends": "./base.json",
+  "compilerOptions": {
+    "ignoreDeprecations": "6.0",
+    "lib": ["es2022"],
+    "module": "commonjs",
+    "moduleResolution": "node"
+  }
+}

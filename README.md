@@ -1,0 +1,99 @@
+# 🍲 An Tâm Kitchen - Fullstack SaaS Platform
+
+Welcome to **An Tâm Kitchen**, a modern, high-performance SaaS platform dedicated to culinary excellence. This project is built using a powerful monorepo architecture for scalability and developer efficiency.
+
+---
+
+## 🚀 Tech Stack
+
+- **Frontend:** [Next.js](https://nextjs.org/) (App Router, Tailwind CSS, TypeScript)
+- **Backend:** [Express.js](https://expressjs.com/) (Node.js, TypeScript)
+- **Database:** [Prisma ORM](https://www.prisma.io/) (PostgreSQL/MySQL/SQLite)
+- **Monorepo Management:** [Turborepo](https://turbo.build/)
+- **Package Manager:** [pnpm](https://pnpm.io/)
+
+---
+
+## 📁 Project Structure
+
+```text
+.
+├── apps/
+│   ├── web/          # Next.js Frontend
+│   └── api/          # Express.js Backend API
+├── packages/
+│   ├── database/     # Prisma schema and generated client
+│   ├── types/        # Shared TypeScript types/interfaces
+│   └── tsconfig/     # Shared TypeScript configurations
+├── turbo.json        # Turborepo configuration
+└── pnpm-workspace.yaml
+```
+
+---
+
+## 🛠️ Getting Started
+
+### 1. Prerequisites
+- **Node.js** (v18 or higher)
+- **pnpm** (Recommended) or `npm/yarn`
+- **Docker** (Optional, for running database locally)
+
+### 2. Installation
+Clone the repository and install dependencies:
+```bash
+pnpm install
+```
+
+### 3. Database Setup (Prisma)
+Navigate to the database package and initialize your schema:
+```bash
+cd packages/database
+# Update the DATABASE_URL in your .env file
+pnpm dlx prisma migrate dev --name init
+```
+
+### 4. Running the Development Environment
+Run all applications in parallel using Turbo:
+```bash
+pnpm dev
+```
+- **Web Frontend:** [http://localhost:3000](http://localhost:3000)
+- **Backend API:** [http://localhost:3001](http://localhost:3001)
+### 5. Running with Docker 🐳
+For a fully containerized environment (Database + API + Web), use Docker Compose:
+```bash
+docker-compose up --build
+```
+- **Web Frontend:** [http://localhost:3000](http://localhost:3000)
+- **Backend API:** [http://localhost:3001](http://localhost:3001)
+- **PostgreSQL:** `localhost:5432`
+
+---
+
+## 🛠️ Development Workflow
+
+### Adding a New Package/App
+To add a new library or application, use the appropriate `pnpm` command within the workspace:
+```bash
+# Add a dependency to the web app
+pnpm add <package-name> --filter web
+```
+
+### Prisma Workflow
+Whenever you modify `packages/database/prisma/schema.prisma`:
+1. Run `pnpm dlx prisma migrate dev` to update the database.
+2. Run `pnpm dlx prisma generate` to update the Prisma Client.
+3. The shared database client will be available for both `apps/web` and `apps/api`.
+
+---
+
+## 🏗️ Architecture Best Practices
+
+- **Shared Types:** Always define your API response and request shapes in `packages/types` to ensure end-to-end type safety between the Backend and Frontend.
+- **Service Layer:** In the Express backend, separate business logic into services and data access into repositories.
+- **Environment Variables:** Use `.env` files in each app/package, but manage shared secrets securely.
+
+---
+
+## 📝 License
+This project is licensed under the [MIT License](LICENSE).
