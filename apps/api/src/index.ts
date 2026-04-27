@@ -34,11 +34,11 @@ app.use(cookieParser());
 app.use('/api/auth', authRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/inventory', inventoryRoutes);
-app.get('/', (req, res) => {
+app.get('/', (req: any, res: any) => {
   res.json({ message: 'Welcome to An Tâm Kitchen API' });
 });
 
-app.get('/health', (req, res) => {
+app.get('/health', (req: any, res: any) => {
   res.json({ status: 'OK' });
 });
 
