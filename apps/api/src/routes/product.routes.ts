@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { productController } from '@/container';
+import { authenticate } from '@/middleware/auth.middleware';
 import {
   validateBody,
   validateParams,
@@ -15,9 +16,6 @@ const router: Router = Router();
 
 /**
  * GET /products
- * Query params:
- *   - ?global=true  → chỉ trả về sản phẩm isGlobal
- *   - ?ownerId=<id> → trả về sản phẩm của user cụ thể
  */
 router.get('/', productController.getAll);
 
@@ -30,13 +28,14 @@ router.get(
   productController.getById,
 );
 
+// Các route thay đổi dữ liệu yêu cầu đăng nhập
+router.use(authenticate);
+
 /**
  * POST /products
  */
 router.post(
   '/',
-  // authenticate,     // TODO: bỏ comment khi có middleware JWT
-  // requireAdmin,     // TODO: bỏ comment khi có middleware phân quyền
   validateBody(CreateProductBodySchema),
   productController.create,
 );
@@ -46,7 +45,6 @@ router.post(
  */
 router.patch(
   '/:id',
-  // authenticate,
   validateParams(ProductIdParamSchema),
   validateBody(UpdateProductBodySchema),
   productController.update,
@@ -57,8 +55,6 @@ router.patch(
  */
 router.delete(
   '/:id',
-  // authenticate,
-  // requireAdmin,
   validateParams(ProductIdParamSchema),
   productController.delete,
 );

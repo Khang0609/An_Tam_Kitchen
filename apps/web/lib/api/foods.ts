@@ -57,7 +57,7 @@ export async function createFood(
   input: CreateFoodInput,
   options: CreateFoodOptions = {}
 ): Promise<CreateFoodResult> {
-  const { useMockFallback = true, now = new Date() } = options;
+  const { now = new Date() } = options;
 
   try {
     const payload = await apiRequest<unknown>(FOOD_API_ENDPOINTS.createFood, {
@@ -72,15 +72,8 @@ export async function createFood(
       usingMockFallback: false,
     };
   } catch (error) {
-    if (!useMockFallback) throw error;
-
-    // Fallback: mock adapter cho đến khi backend hoàn thiện auth middleware
-    const record = addMockFoodRecord(input, now);
-    return {
-      item: mapFoodApiRecordToViewModel(record, "mock", now),
-      source: "mock",
-      usingMockFallback: true,
-    };
+    console.error("Failed to create food via API:", error);
+    throw error; // Không âm thầm dùng mock nữa
   }
 }
 

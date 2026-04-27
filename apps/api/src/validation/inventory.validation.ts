@@ -17,15 +17,24 @@ export const InventoryItemIdParamSchema = z.object({
  * Schema cho POST /inventory - thêm mới vật phẩm vào kho
  */
 export const CreateInventoryItemBodySchema = z.object({
-  productId: z.string().min(1, 'productId là bắt buộc'),
-  displayName: z.string().min(1, 'Tên hiển thị là bắt buộc'),
+  // Có thể gửi productId nếu chọn từ danh sách có sẵn
+  productId: z.string().optional(),
+  
+  // Hoặc gửi name/category để backend tự tạo Product mới
+  name: z.string().optional(),
+  category: z.string().optional(),
+
+  displayName: z.string().optional(),
   openedAt: z.coerce.date().nullable().optional(),
-  expiryDate: z.coerce.date({ error: 'expiryDate phải là ngày hợp lệ' }),
+  expiryDate: z.coerce.date().optional(),
   location: StorageLocationEnum.default('fridge'),
   status: FoodStatusEnum.default('fresh'),
   notes: z.string().optional(),
   quantity: z.string().optional(),
-});
+}).refine(
+  (data) => data.productId || (data.name && data.category),
+  { message: 'Phải cung cấp productId hoặc (name và category) để định danh sản phẩm' }
+);
 
 /**
  * Schema cho PATCH /inventory/:id - cập nhật thông tin vật phẩm

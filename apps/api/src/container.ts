@@ -32,4 +32,4 @@ export const userRepository: IUserRepository = useMock
 // ─── Controllers ─────────────────────────────────────────────────────────────
 // Lưu ý: Chúng ta inject repository vào controller tại đây.
 export const productController = new ProductController(productRepository);
-export const inventoryController = new InventoryController(inventoryRepository);
+export const inventoryController = new InventoryController(inventoryRepository, productRepository);
