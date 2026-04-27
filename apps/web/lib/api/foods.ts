@@ -1,11 +1,17 @@
 import { apiRequest } from "@/lib/api/client";
-import { getMockFoodRecords } from "@/lib/api/mock-foods";
+import { addMockFoodRecord, getMockFoodRecords } from "@/lib/api/mock-foods";
 import type {
+  CreateFoodInput,
+  CreateFoodOptions,
+  CreateFoodResult,
   FoodApiRecord,
   FoodsServiceResult,
   ListFoodsOptions,
 } from "@/lib/api/types";
-import { mapFoodApiRecordsToViewModels } from "@/lib/mappers/food-mapper";
+import {
+  mapFoodApiRecordToViewModel,
+  mapFoodApiRecordsToViewModels,
+} from "@/lib/mappers/food-mapper";
 
 export const FOOD_API_ENDPOINTS = {
   // TODO: Replace this provisional route once the backend publishes the
@@ -40,6 +46,27 @@ export async function listFoods(
       error: normalizeError(error),
     };
   }
+}
+
+export async function createFood(
+  input: CreateFoodInput,
+  options: CreateFoodOptions = {}
+): Promise<CreateFoodResult> {
+  const { useMockFallback = true, now = new Date() } = options;
+
+  if (!useMockFallback) {
+    throw new Error("Backend create endpoint is not available yet");
+  }
+
+  // TODO: Replace this mock write path with the backend InventoryItem create
+  // endpoint once the contract is published.
+  const record = addMockFoodRecord(input, now);
+
+  return {
+    item: mapFoodApiRecordToViewModel(record, "mock", now),
+    source: "mock",
+    usingMockFallback: true,
+  };
 }
 
 function readFoodRecords(payload: unknown): FoodApiRecord[] {

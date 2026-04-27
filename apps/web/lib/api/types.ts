@@ -8,6 +8,16 @@ import type {
 
 export type FoodDataSource = "api" | "mock";
 
+export type AddFoodCategory =
+  | "milk"
+  | "sauce"
+  | "canned_food"
+  | "sausage"
+  | "drink"
+  | "other";
+
+export type AddFoodStorageLocation = "fridge" | "freezer" | "room";
+
 export type ApiResponse<T> = {
   data?: T;
   error?: string;
@@ -76,4 +86,24 @@ export type ListFoodsOptions = {
   signal?: AbortSignal;
   useMockFallback?: boolean;
   now?: Date;
+};
+
+export type CreateFoodInput = {
+  name: string;
+  category: AddFoodCategory;
+  openedAt: string;
+  expiryDate?: string;
+  storageLocation: AddFoodStorageLocation;
+  notes?: string;
+};
+
+export type CreateFoodOptions = {
+  useMockFallback?: boolean;
+  now?: Date;
+};
+
+export type CreateFoodResult = {
+  item: FoodItemViewModel;
+  source: FoodDataSource;
+  usingMockFallback: boolean;
 };

@@ -12,6 +12,7 @@ import {
   Sparkles,
 } from "lucide-react";
 import { motion, useReducedMotion } from "motion/react";
+import Link from "next/link";
 import type { ComponentType } from "react";
 import { AppHeader, FoodStatusBadge } from "@/components/foundation";
 import { Button } from "@/components/ui/button";
@@ -145,10 +146,10 @@ export function LandingPage() {
                   className="h-12 justify-center rounded-2xl px-5 text-base"
                   variant="outline"
                 >
-                  <a href="#add-food">
+                  <Link href="/foods/new">
                     <Plus aria-hidden="true" className="size-4" />
                     Thêm thực phẩm
-                  </a>
+                  </Link>
                 </Button>
               </div>
 
@@ -287,7 +288,7 @@ export function LandingPage() {
                 className="h-12 rounded-2xl px-5 text-base"
                 variant="outline"
               >
-                <a href="#add-food">Thêm thực phẩm</a>
+                <Link href="/foods/new">Thêm thực phẩm</Link>
               </Button>
             </div>
           </div>

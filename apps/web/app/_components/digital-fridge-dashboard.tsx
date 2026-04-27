@@ -13,6 +13,7 @@ import {
   SearchCheck,
   Sparkles,
 } from "lucide-react";
+import Link from "next/link";
 import { useMemo, useState } from "react";
 import type { ComponentType, ReactNode } from "react";
 import type { FoodStatus } from "@repo/types";
@@ -123,9 +124,11 @@ export function DigitalFridgeDashboard() {
               Theo dõi thực phẩm đã mở nắp và biết món nào nên dùng trước.
             </p>
           </div>
-          <Button className="h-12 rounded-2xl px-5 text-base" type="button">
-            <Plus aria-hidden={true} className="size-4" />
-            Thêm thực phẩm
+          <Button asChild className="h-12 rounded-2xl px-5 text-base">
+            <Link href="/foods/new">
+              <Plus aria-hidden={true} className="size-4" />
+              Thêm thực phẩm
+            </Link>
           </Button>
         </div>
 

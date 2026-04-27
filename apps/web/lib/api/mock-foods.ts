@@ -1,7 +1,38 @@
 import { addDays, subDays } from "date-fns";
-import type { FoodApiRecord } from "@/lib/api/types";
+import type { FoodCategory, StorageLocation } from "@repo/types";
+import type {
+  AddFoodCategory,
+  AddFoodStorageLocation,
+  CreateFoodInput,
+  FoodApiRecord,
+} from "@/lib/api/types";
 
 const USER_ID = "0192f9a5-3c1a-7d7e-8b63-77e859c3a001";
+const MOCK_STORAGE_KEY = "bep-an-tam:mock-foods";
+
+const categoryToFoodCategory: Record<AddFoodCategory, FoodCategory> = {
+  milk: "dairy",
+  sauce: "sauces_spices",
+  canned_food: "others",
+  sausage: "meat_poultry",
+  drink: "drinks",
+  other: "others",
+};
+
+const storageToApiLocation: Record<AddFoodStorageLocation, StorageLocation> = {
+  fridge: "fridge",
+  freezer: "freezer",
+  room: "room_temp",
+};
+
+const daysAfterOpenByCategory: Record<AddFoodCategory, number> = {
+  milk: 5,
+  sauce: 30,
+  canned_food: 3,
+  sausage: 4,
+  drink: 3,
+  other: 5,
+};
 
 export function getMockFoodRecords(now = new Date()): FoodApiRecord[] {
   return [
@@ -117,5 +148,71 @@ export function getMockFoodRecords(now = new Date()): FoodApiRecord[] {
         daysAfterOpen: 30,
       },
     },
+    ...getStoredMockFoodRecords(),
   ];
+}
+
+export function addMockFoodRecord(
+  input: CreateFoodInput,
+  now = new Date()
+): FoodApiRecord {
+  const openedAt = parseDateInput(input.openedAt) ?? now;
+  const category = categoryToFoodCategory[input.category];
+  const daysAfterOpen = daysAfterOpenByCategory[input.category];
+  const record: FoodApiRecord = {
+    id: createMockId(),
+    userId: USER_ID,
+    productId: createMockId(),
+    displayName: input.name.trim(),
+    openedAt,
+    expiryDate:
+      parseDateInput(input.expiryDate) ?? addDays(openedAt, daysAfterOpen),
+    location: storageToApiLocation[input.storageLocation],
+    quantity: "",
+    notes: input.notes?.trim() || undefined,
+    createdAt: now,
+    updatedAt: now,
+    product: {
+      id: createMockId(),
+      name: input.name.trim(),
+      company: "Bếp An Tâm Demo",
+      category,
+      isGlobal: false,
+      daysBeforeOpen: 0,
+      daysAfterOpen,
+    },
+  };
+
+  saveStoredMockFoodRecords([record, ...getStoredMockFoodRecords()]);
+  return record;
+}
+
+function getStoredMockFoodRecords(): FoodApiRecord[] {
+  if (typeof window === "undefined") return [];
+
+  try {
+    const rawRecords = window.localStorage.getItem(MOCK_STORAGE_KEY);
+    if (!rawRecords) return [];
+    const parsed = JSON.parse(rawRecords);
+    return Array.isArray(parsed) ? (parsed as FoodApiRecord[]) : [];
+  } catch {
+    return [];
+  }
+}
+
+function saveStoredMockFoodRecords(records: FoodApiRecord[]) {
+  if (typeof window === "undefined") return;
+  window.localStorage.setItem(MOCK_STORAGE_KEY, JSON.stringify(records));
+}
+
+function parseDateInput(value?: string) {
+  if (!value) return null;
+  const date = new Date(`${value}T00:00:00`);
+  if (Number.isNaN(date.getTime())) return null;
+  return date;
+}
+
+function createMockId() {
+  if (globalThis.crypto?.randomUUID) return globalThis.crypto.randomUUID();
+  return `mock-${Date.now()}-${Math.random().toString(16).slice(2)}`;
 }
