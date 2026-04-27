@@ -1,0 +1,79 @@
+import type {
+  FoodCategory,
+  FoodStatus,
+  InventoryItem,
+  Product,
+  StorageLocation,
+} from "@repo/types";
+
+export type FoodDataSource = "api" | "mock";
+
+export type ApiResponse<T> = {
+  data?: T;
+  error?: string;
+  message?: string;
+  status: number;
+};
+
+export type FoodProduct = Product;
+
+export type FoodApiRecord = Partial<InventoryItem> & {
+  product?: Partial<Product> | null;
+  productId?: string;
+  product_id?: string;
+  userId?: string;
+  user_id?: string;
+  displayName?: string;
+  display_name?: string;
+  openedAt?: Date | string | null;
+  opened_at?: Date | string | null;
+  expiryDate?: Date | string;
+  expiry_date?: Date | string;
+  createdAt?: Date | string;
+  created_at?: Date | string;
+  updatedAt?: Date | string;
+  updated_at?: Date | string;
+};
+
+export type FoodStatusMeta = {
+  status: FoodStatus;
+  label: string;
+  description: string;
+  badgeClassName: string;
+};
+
+export type FoodItemViewModel = {
+  id: string;
+  userId: string;
+  productId: string;
+  displayName: string;
+  productName?: string;
+  category?: FoodCategory;
+  company?: string;
+  barcode?: string;
+  imageUrl?: string;
+  openedAt?: Date | null;
+  expiryDate: Date;
+  location: StorageLocation;
+  locationLabel: string;
+  status: FoodStatus;
+  statusMeta: FoodStatusMeta;
+  notes?: string;
+  quantity?: string;
+  createdAt: Date;
+  updatedAt: Date;
+  source: FoodDataSource;
+};
+
+export type FoodsServiceResult = {
+  items: FoodItemViewModel[];
+  source: FoodDataSource;
+  usingMockFallback: boolean;
+  error?: Error;
+};
+
+export type ListFoodsOptions = {
+  signal?: AbortSignal;
+  useMockFallback?: boolean;
+  now?: Date;
+};
