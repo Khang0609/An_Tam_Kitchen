@@ -4,6 +4,7 @@
     "outDir": "dist",
     "rootDir": "src",
     "noEmit": false,
+    "moduleResolution": "node16",
     "resolveJsonModule": true,
     "paths": {
       "@/*": ["./src/*"]

@@ -1,15 +1,14 @@
-import express from 'express';
-import type { Express, Request, Response } from 'express-serve-static-core';
+import express, { Application } from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import cookieParser from 'cookie-parser';
-import authRoutes from './routes/auth.routes';
-import productRoutes from './routes/product.routes';
-import inventoryRoutes from './routes/inventory.routes';
+import authRoutes from '@/routes/auth.routes.js';
+import productRoutes from '@/routes/product.routes.js';
+import inventoryRoutes from '@/routes/inventory.routes.js';
 
 dotenv.config();
 
-const app: Express = express();
+const app: Application = express();
 const port = process.env.PORT || 3001;
 
 // ─── CORS ────────────────────────────────────────────────────────────────────
