@@ -15,7 +15,7 @@ services:
   api:
     build:
       context: .
-      dockerfile: ./apps/api/Dockerfile
+      dockerfile: Dockerfile
     container_name: antam_api
     ports:
       - "3001:3001"
