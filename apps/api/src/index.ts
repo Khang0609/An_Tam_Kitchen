@@ -1,4 +1,4 @@
-import express, { Application } from 'express';
+import express, { Request, Response, Application } from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import cookieParser from 'cookie-parser';
