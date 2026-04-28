@@ -8,5 +8,16 @@
     "dev": "turbo run dev",
     "build": "turbo run build",
     "lint": "turbo run lint"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "@prisma/engines",
+      "argon2",
+      "esbuild",
+      "msw",
+      "prisma",
+      "sharp",
+      "unrs-resolver"
+    ]
   }
 }
