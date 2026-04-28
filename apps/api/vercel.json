@@ -5,10 +5,10 @@
       "runtime": "nodejs20.x"
     }
   },
-  "rewrites": [
+  "routes": [
     {
-      "source": "/(.*)",
-      "destination": "/src/index.ts"
+      "src": "/(.*)",
+      "dest": "apps/api/dist/index.js"
     }
   ]
 }
