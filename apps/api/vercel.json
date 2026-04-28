@@ -1,5 +1,4 @@
 {
-  "version": 2,
   "functions": {
     "apps/api/dist/index.js": {
       "runtime": "nodejs20.x"
