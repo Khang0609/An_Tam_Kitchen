@@ -19,6 +19,10 @@ RUN turbo prune api --docker
 FROM base AS builder
 WORKDIR /app
 
+# Prisma cần DATABASE_URL để generate client (không kết nối thật)
+# Giá trị thật sẽ được truyền vào lúc runtime
+ENV DATABASE_URL="postgresql://dummy:dummy@localhost:5432/dummy"
+
 COPY --from=pruner /app/out/json/ .
 COPY --from=pruner /app/out/pnpm-lock.yaml ./pnpm-lock.yaml
 RUN pnpm install --frozen-lockfile
