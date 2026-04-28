@@ -1,4 +1,5 @@
-import express, { Request, Response, Express } from 'express';
+import express from 'express';
+import type { Express, Request, Response } from 'express-serve-static-core';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import cookieParser from 'cookie-parser';
