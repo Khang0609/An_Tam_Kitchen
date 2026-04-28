@@ -2,9 +2,9 @@ import express, { Request, Response, Application } from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import cookieParser from 'cookie-parser';
-import authRoutes from './routes/auth.routes.js';
-import productRoutes from './routes/product.routes.js';
-import inventoryRoutes from './routes/inventory.routes.js';
+import authRoutes from './routes/auth.routes';
+import productRoutes from './routes/product.routes';
+import inventoryRoutes from './routes/inventory.routes';
 
 dotenv.config();
 
