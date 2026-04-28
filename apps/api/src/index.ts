@@ -1,4 +1,4 @@
-import express, { Express } from 'express';
+import express, { Application } from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import cookieParser from 'cookie-parser';
@@ -8,7 +8,7 @@ import inventoryRoutes from './routes/inventory.routes.js';
 
 dotenv.config();
 
-const app: Express = express();
+const app: Application = express();
 const port = process.env.PORT || 3001;
 
 // ─── CORS ────────────────────────────────────────────────────────────────────
