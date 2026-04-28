@@ -1,6 +1,5 @@
 {
-  "$schema": "https://json.schemastore.org/tsconfig",
-  "display": "Default",
+  "display": "Node.js",
   "compilerOptions": {
     "composite": false,
     "declaration": true,
