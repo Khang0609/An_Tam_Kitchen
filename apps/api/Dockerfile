@@ -8,8 +8,12 @@ RUN corepack enable && corepack prepare pnpm@9.15.4 --activate
 FROM base AS pruner
 RUN npm install -g turbo
 WORKDIR /app
+# Copy toàn bộ vào để turbo có đủ ngữ cảnh monorepo
 COPY . .
-# Tạo ra một thư mục 'out' chỉ chứa các file cần thiết cho app 'api'
+# Debug: Kiểm tra xem các file quan trọng có tồn tại không
+RUN ls -la pnpm-lock.yaml pnpm-workspace.yaml turbo.json package.json
+
+# Chạy prune cho package tên là 'api'
 RUN turbo prune api --docker
 
 # Stage 2: Builder - Cài đặt dependencies và build
@@ -20,28 +24,30 @@ WORKDIR /app
 COPY --from=pruner /app/out/json/ .
 COPY --from=pruner /app/out/pnpm-lock.yaml ./pnpm-lock.yaml
 
-# Cài đặt dependencies (tận dụng cache nếu lockfile không đổi)
+# Cài đặt dependencies
 RUN pnpm install --frozen-lockfile
 
 # Copy toàn bộ code đã được lọc và build
 COPY --from=pruner /app/out/full/ .
-# Lưu ý: Cần generate prisma client trước khi build nếu app phụ thuộc vào nó
+
+# Nếu có Prisma, cần generate client trước khi build
+# RUN pnpm --filter @repo/database build 
+
 RUN pnpm build --filter=api
 
 # Stage 3: Runner - Chạy ứng dụng
 FROM base AS runner
 WORKDIR /app
 
-# Tạo user để không chạy app bằng quyền root (bảo mật)
+# Bảo mật: không chạy quyền root
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 expressjs
 USER expressjs
 
-# Copy kết quả build và node_modules cần thiết
+# Copy kết quả build
 COPY --from=builder /app/apps/api/dist ./apps/api/dist
 COPY --from=builder /app/apps/api/package.json ./apps/api/package.json
 COPY --from=builder /app/node_modules ./node_modules
-# Copy các package nội bộ nếu có
 COPY --from=builder /app/packages ./packages 
 
 ENV NODE_ENV=production
