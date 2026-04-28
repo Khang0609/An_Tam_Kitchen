@@ -31,6 +31,25 @@ export type SafeUser = z.infer<typeof SafeUserSchema>;
 // Example of a Paginated Response type
 export type UserResponse = z.infer<ReturnType<typeof ApiResponseSchema<typeof SafeUserSchema>>>;
 
-export * from './products.js';
-export * from './inventory.js';
-export * from './scans.js';
+export { 
+  FoodCategoryEnum, 
+  type FoodCategory, 
+  ProductSchema, 
+  type Product 
+} from './products';
+
+export { 
+  StorageLocationEnum, 
+  type StorageLocation, 
+  FoodStatusEnum, 
+  type FoodStatus, 
+  InventoryItemSchema, 
+  type InventoryItem, 
+  FoodNotificationSchema, 
+  type FoodNotification 
+} from './inventory';
+
+export { 
+  BarcodeScanResultSchema, 
+  type BarcodeScanResult 
+} from './scans';

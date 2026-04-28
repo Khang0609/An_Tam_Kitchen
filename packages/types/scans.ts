@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { ProductSchema } from './products.js';
+import { ProductSchema } from './products';
 
 /**
  * Kết quả sau khi quét mã vạch
