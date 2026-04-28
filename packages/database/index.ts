@@ -1,4 +1,9 @@
 import { PrismaClient } from "@prisma/client";
+import dotenv from 'dotenv';
+
+dotenv.config();
+
+console.log(process.env.DB_HOST);
 
 export * from "@prisma/client";
 export * from "./mock";
