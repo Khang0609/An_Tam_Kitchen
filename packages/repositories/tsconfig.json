@@ -1,6 +1,7 @@
 {
   "extends": "@repo/typescript-config/base.json",
   "compilerOptions": {
+    "module": "node16",
     "outDir": "./dist",
     "rootDir": "."
   },

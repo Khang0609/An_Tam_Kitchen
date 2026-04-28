@@ -8,7 +8,7 @@ import { FoodCategoryEnum } from '@repo/types';
  * Validates :id route param as UUID v7
  */
 export const ProductIdParamSchema = z.object({
-  id: z.uuidv7({ error: 'ID sản phẩm phải là UUID v7 hợp lệ' }),
+  id: z.uuidv7({ message: 'ID sản phẩm phải là UUID v7 hợp lệ' }),
 });
 
 // ─── Body Schemas ─────────────────────────────────────────────────────────────
@@ -22,7 +22,7 @@ export const CreateProductBodySchema = z.object({
   company: z.string().min(1, 'Tên công ty là bắt buộc'),
   barcode: z.string().optional(),
   category: FoodCategoryEnum.default('others'),
-  imageUrl: z.url({ error: 'imageUrl phải là URL hợp lệ' }).optional(),
+  imageUrl: z.url({ message: 'imageUrl phải là URL hợp lệ' }).optional(),
   ownerId: z.string().nullable().optional(),
   isGlobal: z.boolean().default(false),
   daysBeforeOpen: z
@@ -41,7 +41,7 @@ export const CreateProductBodySchema = z.object({
  */
 export const UpdateProductBodySchema = CreateProductBodySchema.partial().refine(
   (data) => Object.keys(data).length > 0,
-  { error: 'Body cập nhật không được rỗng' },
+  { message: 'Body cập nhật không được rỗng' },
 );
 
 export type CreateProductBody = z.infer<typeof CreateProductBodySchema>;

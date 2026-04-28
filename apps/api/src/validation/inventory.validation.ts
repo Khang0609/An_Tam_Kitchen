@@ -8,7 +8,7 @@ import { StorageLocationEnum, FoodStatusEnum } from '@repo/types';
  * Validates :id route param as UUID v7
  */
 export const InventoryItemIdParamSchema = z.object({
-  id: z.uuidv7({ error: 'ID vật phẩm phải là UUID v7 hợp lệ' }),
+  id: z.uuidv7({ message: 'ID vật phẩm phải là UUID v7 hợp lệ' }),
 });
 
 // ─── Body Schemas ─────────────────────────────────────────────────────────────

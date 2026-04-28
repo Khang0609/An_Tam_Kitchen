@@ -2,13 +2,13 @@ import express, { Express } from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import cookieParser from 'cookie-parser';
-import authRoutes from './routes/auth.routes';
-import productRoutes from './routes/product.routes';
-import inventoryRoutes from './routes/inventory.routes';
+import authRoutes from './routes/auth.routes.js';
+import productRoutes from './routes/product.routes.js';
+import inventoryRoutes from './routes/inventory.routes.js';
 
 dotenv.config();
 
-const app = express() as any;
+const app: Express = express();
 const port = process.env.PORT || 3001;
 
 // ─── CORS ────────────────────────────────────────────────────────────────────
@@ -34,11 +34,11 @@ app.use(cookieParser());
 app.use('/api/auth', authRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/inventory', inventoryRoutes);
-app.get('/', (req: any, res: any) => {
+app.get('/', (req, res) => {
   res.json({ message: 'Welcome to An Tâm Kitchen API' });
 });
 
-app.get('/health', (req: any, res: any) => {
+app.get('/health', (req, res) => {
   res.json({ status: 'OK' });
 });
 
