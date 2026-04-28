@@ -4,7 +4,7 @@
   "compilerOptions": {
     "ignoreDeprecations": "5.0",
     "lib": ["es2022"],
-    "module": "node",
+    "module": "commonjs",
     "moduleResolution": "node"
   }
 }
