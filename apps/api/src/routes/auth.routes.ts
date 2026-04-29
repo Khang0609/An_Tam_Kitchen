@@ -1,5 +1,5 @@
 import express, { Router } from 'express';
-import { signup, login, logout } from '../controllers/auth.controller.js';
+import { signup, login, logout, forgotPassword, resetPassword, guestLogin } from '@/controllers/auth.controller.js';
 import rateLimit from 'express-rate-limit';
 
 const router = express.Router() as any;
@@ -13,5 +13,8 @@ const authLimiter = rateLimit({
 router.post('/signup', authLimiter, signup);
 router.post('/login', authLimiter, login);
 router.post('/logout', logout);
+router.post('/forgot-password', authLimiter, forgotPassword);
+router.post('/reset-password', authLimiter, resetPassword);
+router.post('/guest', authLimiter, guestLogin);
 
 export default router;

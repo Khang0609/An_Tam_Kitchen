@@ -21,6 +21,15 @@ const LoginSchema = UserSchema.pick({
   password: true,
 });
 
+const ForgotPasswordSchema = z.object({
+  email: z.email(),
+});
+
+const ResetPasswordSchema = z.object({
+  token: z.string(),
+  newPassword: z.string().min(8),
+});
+
 export const signup = async (req: Request, res: Response): Promise<any> => {
   try {
     const parsedBody = SignupSchema.parse(req.body);
@@ -138,6 +147,92 @@ export const logout = async (req: Request, res: Response): Promise<any> => {
     return res.status(200).json({ message: "Logged out successfully" });
   } catch (error) {
     console.error("Logout error:", error);
+    return res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+export const forgotPassword = async (req: Request, res: Response): Promise<any> => {
+  try {
+    const { email } = ForgotPasswordSchema.parse(req.body);
+    const user = await userRepository.findByEmail(email);
+
+    // Always return 200 to prevent email enumeration
+    if (!user) {
+      return res.status(200).json({ message: "Nếu email tồn tại trong hệ thống, bạn sẽ nhận được hướng dẫn đặt lại mật khẩu." });
+    }
+
+    const resetToken = jwt.sign(
+      { userId: user.id, type: "reset" },
+      JWT_SECRET,
+      { expiresIn: "15m" }
+    );
+
+    // TODO: Send real email here. For now, log to console.
+    console.log(`[FORGOT PASSWORD] Link: http://localhost:3000/reset-password?token=${resetToken}`);
+
+    return res.status(200).json({ message: "Nếu email tồn tại trong hệ thống, bạn sẽ nhận được hướng dẫn đặt lại mật khẩu." });
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return res.status(400).json({ error: "Email không hợp lệ" });
+    }
+    console.error("Forgot password error:", error);
+    return res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+export const resetPassword = async (req: Request, res: Response): Promise<any> => {
+  try {
+    const { token, newPassword } = ResetPasswordSchema.parse(req.body);
+
+    const decoded = jwt.verify(token, JWT_SECRET) as { userId: string; type: string };
+
+    if (decoded.type !== "reset") {
+      return res.status(400).json({ error: "Token không hợp lệ" });
+    }
+
+    const hashedPassword = await argon2.hash(newPassword);
+    await userRepository.update(decoded.userId, { password: hashedPassword });
+
+    return res.status(200).json({ message: "Mật khẩu đã được cập nhật thành công." });
+  } catch (error) {
+    if (error instanceof jwt.TokenExpiredError) {
+      return res.status(400).json({ error: "Token đã hết hạn" });
+    }
+    if (error instanceof jwt.JsonWebTokenError) {
+      return res.status(400).json({ error: "Token không hợp lệ" });
+    }
+    console.error("Reset password error:", error);
+    return res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+export const guestLogin = async (req: Request, res: Response): Promise<any> => {
+  try {
+    const guestId = Math.random().toString(36).substring(7);
+    const guestEmail = `guest_${guestId}@beptantam.vn`;
+    const guestName = `Khách ${guestId}`;
+    const guestPassword = await argon2.hash(Math.random().toString(36));
+
+    const user = await userRepository.create({
+      email: guestEmail,
+      name: guestName,
+      password: guestPassword,
+    });
+
+    const accessToken = jwt.sign({ userId: user.id, isGuest: true }, JWT_SECRET, {
+      expiresIn: "2h", // Guest session shorter
+    });
+
+    res.cookie("accessToken", accessToken, {
+      httpOnly: true,
+      secure: true,
+      sameSite: "none",
+      maxAge: 2 * 60 * 60 * 1000,
+    });
+
+    return res.status(200).json({ message: "Đăng nhập với tư cách khách thành công", user: { name: user.name, isGuest: true } });
+  } catch (error) {
+    console.error("Guest login error:", error);
     return res.status(500).json({ error: "Internal server error" });
   }
 };
