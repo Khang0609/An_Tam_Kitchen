@@ -47,4 +47,5 @@ USER expressjs
 ENV NODE_ENV=production
 ENV PORT=3001
 EXPOSE 3001
-CMD pnpm --filter @repo/database db:push && node apps/api/dist/index.js
+CMD pnpm --filter @repo/database db:push && node apps/api/dist/index.js || (echo "Failed to start. Check DATABASE_URL and Prisma logs." && exit 1)
+

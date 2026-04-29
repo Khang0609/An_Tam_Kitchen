@@ -43,9 +43,11 @@ app.get('/health', (req, res) => {
 });
 
 if (process.env.NODE_ENV !== 'test' && !process.env.VERCEL) {
-  app.listen(port, () => {
-    console.log(`Server is running on http://localhost:${port}`);
+  const server = app.listen(Number(port), '0.0.0.0', () => {
+    console.log(`🚀 API Server is running on port ${port}`);
+    console.log(`Environment: ${process.env.NODE_ENV}`);
   });
 }
+
 
 export default app;
