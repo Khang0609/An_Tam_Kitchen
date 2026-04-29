@@ -49,6 +49,15 @@ export function AppHeader({ className }: AppHeaderProps) {
             </Button>
           ))}
         </nav>
+
+        <div className="flex items-center gap-2">
+          <Button asChild size="sm" variant="outline">
+            <Link href="/login">Đăng nhập</Link>
+          </Button>
+          <Button asChild size="sm">
+            <Link href="/signup">Đăng ký</Link>
+          </Button>
+        </div>
       </div>
     </header>
   );
