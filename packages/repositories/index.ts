@@ -1,7 +1,7 @@
-export * from './interfaces';
-export * from './mock'; // Giữ lại Mock để dùng trong unit tests
+export * from './interfaces.js';
+export * from './mock.js'; // Giữ lại Mock để dùng trong unit tests
 
 // Prisma Repositories (production)
-export * from './product.repository';
-export * from './inventory.repository';
-export * from './user.repository';
+export * from './product.repository.js';
+export * from './inventory.repository.js';
+export * from './user.repository.js';

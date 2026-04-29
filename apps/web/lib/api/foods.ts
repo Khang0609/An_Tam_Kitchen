@@ -16,9 +16,12 @@ import {
 } from "@/lib/mappers/food-mapper";
 
 export const FOOD_API_ENDPOINTS = {
-  // TODO: Replace this provisional route once the backend publishes the
-  // InventoryItem endpoint contract. The current Express API only has /health.
-  listFoods: "/foods",
+  listFoods: "/api/inventory",
+  createFood: "/api/inventory",
+  getFoodById: (id: string) => `/api/inventory/${id}`,
+  updateFood: (id: string) => `/api/inventory/${id}`,
+  deleteFood: (id: string) => `/api/inventory/${id}`,
+  listProducts: "/api/products",
 } as const;
 
 export async function listFoods(
@@ -54,21 +57,24 @@ export async function createFood(
   input: CreateFoodInput,
   options: CreateFoodOptions = {}
 ): Promise<CreateFoodResult> {
-  const { useMockFallback = true, now = new Date() } = options;
+  const { now = new Date() } = options;
 
-  if (!useMockFallback) {
-    throw new Error("Backend create endpoint is not available yet");
+  try {
+    const payload = await apiRequest<unknown>(FOOD_API_ENDPOINTS.createFood, {
+      method: "POST",
+      body: input as unknown as Record<string, unknown>,
+    });
+    const record = payload as FoodApiRecord;
+
+    return {
+      item: mapFoodApiRecordToViewModel(record, "api", now),
+      source: "api",
+      usingMockFallback: false,
+    };
+  } catch (error) {
+    console.error("Failed to create food via API:", error);
+    throw error; // Không âm thầm dùng mock nữa
   }
-
-  // TODO: Replace this mock write path with the backend InventoryItem create
-  // endpoint once the contract is published.
-  const record = addMockFoodRecord(input, now);
-
-  return {
-    item: mapFoodApiRecordToViewModel(record, "mock", now),
-    source: "mock",
-    usingMockFallback: true,
-  };
 }
 
 export async function getFoodById(

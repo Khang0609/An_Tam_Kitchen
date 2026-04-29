@@ -1,6 +1,6 @@
 import { Product, InventoryItem, User } from '@repo/types';
 import { mockDatabase } from '@repo/database';
-import { IProductRepository, IInventoryRepository, IUserRepository } from './interfaces';
+import { IProductRepository, IInventoryRepository, IUserRepository } from './interfaces.js';
 
 /**
  * Mock Product Repository

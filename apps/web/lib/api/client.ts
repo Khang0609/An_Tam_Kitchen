@@ -43,6 +43,7 @@ export async function apiRequest<T>(
     ...options,
     body,
     headers,
+    credentials: "include",
   });
 
   const payload = await readResponsePayload(response);
@@ -85,10 +86,9 @@ function unwrapApiResponse(payload: unknown) {
   if (
     payload &&
     typeof payload === "object" &&
-    "status" in payload &&
     "data" in payload
   ) {
-    return payload.data;
+    return (payload as Record<string, unknown>).data;
   }
 
   return payload;

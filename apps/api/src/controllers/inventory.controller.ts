@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
-import { IInventoryRepository } from '@repo/repositories';
-import { CreateInventoryItemBody, UpdateInventoryItemBody } from '@/validation/inventory.validation';
+import { IInventoryRepository, IProductRepository } from '@repo/repositories';
+import { CreateInventoryItemBody, UpdateInventoryItemBody } from '../validation/inventory.validation.js';
+import { FoodCategory } from '@repo/types';
 
 /**
  * InventoryController
@@ -9,27 +10,59 @@ import { CreateInventoryItemBody, UpdateInventoryItemBody } from '@/validation/i
  * Mọi DB operation đều đi qua IInventoryRepository.
  */
 export class InventoryController {
-  constructor(private readonly inventoryRepo: IInventoryRepository) {}
+  constructor(
+    private readonly inventoryRepo: IInventoryRepository,
+    private readonly productRepo: IProductRepository
+  ) {}
 
   // ─── POST /inventory ──────────────────────────────────────────────────────
   
   /**
    * Tạo mới một vật phẩm trong kho.
-   * userId được lấy từ auth middleware (giả định đã được validate).
+   * Hỗ trợ tạo Product "on-the-fly" nếu chỉ gửi name/category.
    */
   create = async (req: Request, res: Response): Promise<any> => {
     try {
-      const userId = (req as any).userId; // Lấy từ auth middleware
+      const userId = (req as any).userId;
       
       if (!userId) {
         return res.status(401).json({ error: 'Unauthorized: Thiếu thông tin người dùng' });
       }
 
-      const body: CreateInventoryItemBody = req.body;
-      
+      const body: CreateInventoryItemBody & { name?: string; category?: string } = req.body;
+      let productId = body.productId;
+
+      // Logic "Smart Create": Nếu không có productId, tạo Product mới
+      if (!productId && body.name && body.category) {
+        const newProduct = await this.productRepo.create({
+          name: body.name,
+          category: body.category as FoodCategory, // Đổi từ FoodCategory về category
+          company: 'Unknown',
+          daysBeforeOpen: 30,
+          daysAfterOpen: 7,
+          isGlobal: false,
+          ownerId: userId,
+        });
+        productId = newProduct.id;
+      }
+
+      if (!productId) {
+        return res.status(400).json({ error: 'Không thể xác định Product ID' });
+      }
+
+      // Đảm bảo expiryDate là Date (mặc định +1 năm nếu không có)
+      const expiryDate = body.expiryDate || new Date(Date.now() + 365 * 24 * 60 * 60 * 1000);
+
       const newItem = await this.inventoryRepo.create({
-        ...body,
         userId,
+        productId,
+        displayName: body.displayName || body.name || 'Sản phẩm mới',
+        openedAt: body.openedAt,
+        expiryDate,
+        location: body.location || 'fridge',
+        status: body.status || 'fresh',
+        notes: body.notes,
+        quantity: body.quantity,
       });
 
       return res.status(201).json({ data: newItem });

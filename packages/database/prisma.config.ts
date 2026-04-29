@@ -1,11 +1,9 @@
-import { defineConfig } from 'prisma/config';
-import dotenv from 'dotenv';
-
-dotenv.config(); // Load biến môi trường từ file .env
+import "dotenv/config";
+import { defineConfig, env } from "prisma/config";
 
 export default defineConfig({
+  schema: "./prisma/schema.prisma",
   datasource: {
-    // Ưu tiên DIRECT_URL (bạn đã copy từ Supabase) hoặc DATABASE_URL
-    url: process.env.DIRECT_URL || process.env.DATABASE_URL!,
+    url: process.env.DATABASE_URL || "postgresql://dummy:dummy@localhost:5432/dummy",
   },
 });

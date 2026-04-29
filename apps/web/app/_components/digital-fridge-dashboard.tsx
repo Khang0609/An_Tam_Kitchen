@@ -415,8 +415,8 @@ function ReminderPreview({
       </div>
 
       <p className="mt-4 text-xs leading-5 text-muted-foreground">
-        Đây là preview giả lập để demo luồng nhắc nhở, chưa gọi endpoint reminder
-        thật.
+        Nhắc nhở tự động sẽ gửi qua thông báo khi tính năng reminder được kích
+        hoạt.
       </p>
     </aside>
   );

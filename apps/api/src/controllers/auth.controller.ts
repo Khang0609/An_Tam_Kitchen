@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import argon2 from "argon2";
 import jwt from "jsonwebtoken";
-import { userRepository } from "@/container";
+import { userRepository } from "../container.js";
 import { UserSchema } from "@repo/types";
 import { z } from "zod";
 
@@ -82,17 +82,18 @@ export const login = async (req: Request, res: Response): Promise<any> => {
     // Lưu refresh token vào DB
     await userRepository.update(user.id, { refreshToken });
 
+    const isProd = process.env.NODE_ENV === "production";
     res.cookie("accessToken", accessToken, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
+      secure: true, // Always true for cross-domain SameSite=None
+      sameSite: "none",
       maxAge: 15 * 60 * 1000,
     });
 
     res.cookie("refreshToken", refreshToken, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
+      secure: true,
+      sameSite: "none",
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
@@ -125,13 +126,13 @@ export const logout = async (req: Request, res: Response): Promise<any> => {
 
     res.clearCookie("accessToken", {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
+      secure: true,
+      sameSite: "none",
     });
     res.clearCookie("refreshToken", {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
+      secure: true,
+      sameSite: "none",
     });
 
     return res.status(200).json({ message: "Logged out successfully" });

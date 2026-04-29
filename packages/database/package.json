@@ -2,21 +2,26 @@
   "name": "@repo/database",
   "version": "1.0.0",
   "private": true,
-  "main": "./index.ts",
-  "types": "./index.ts",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "scripts": {
+    "build": "prisma generate && tsc",
     "db:generate": "prisma generate",
     "db:push": "prisma db push",
     "db:studio": "prisma studio"
   },
   "dependencies": {
+    "@prisma/adapter-pg": "^7.8.0",
     "@prisma/client": "^7.8.0",
+    "@prisma/config": "^7.8.0",
+    "prisma": "^7.8.0",
     "@repo/types": "workspace:*",
-    "dotenv": "^17.4.2"
+    "dotenv": "^17.4.2",
+    "pg": "^8.20.0"
   },
   "devDependencies": {
     "@types/node": "^25.6.0",
-    "prisma": "^7.8.0",
+    "@types/pg": "^8.20.0",
     "typescript": "^6.0.3"
   }
 }

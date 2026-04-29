@@ -1,0 +1,35 @@
+services:
+  # Dịch vụ Backend (API)
+  - type: web
+    name: antam-api
+    runtime: docker
+    dockerContext: .
+    dockerfile: apps/api/Dockerfile
+    plan: free
+    envVars:
+      - key: DATABASE_URL
+        sync: false
+      - key: DIRECT_URL
+        sync: false
+      - key: PORT
+        value: 3001
+      - key: NODE_ENV
+        value: production
+
+  # Dịch vụ Frontend (Web)
+  - type: web
+    name: antam-web
+    runtime: docker
+    dockerContext: .
+    dockerfile: apps/web/Dockerfile
+    plan: free
+    envVars:
+      - key: NEXT_PUBLIC_API_URL
+        fromService:
+          type: web
+          name: antam-api
+          property: host
+      - key: PORT
+        value: 3000
+      - key: NODE_ENV
+        value: production

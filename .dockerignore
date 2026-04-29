@@ -1,8 +1,12 @@
-node_modules
-.next
-dist
-.turbo
-out
+**/node_modules
+**/.next
+**/dist
+**/.turbo
+**/out
 .git
 .env
 *.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*

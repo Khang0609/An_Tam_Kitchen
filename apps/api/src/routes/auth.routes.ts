@@ -1,8 +1,8 @@
-import { Router } from 'express';
-import { signup, login, logout } from '@/controllers/auth.controller';
+import express, { Router } from 'express';
+import { signup, login, logout } from '../controllers/auth.controller.js';
 import rateLimit from 'express-rate-limit';
 
-const router: Router = Router();
+const router = express.Router() as any;
 
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes

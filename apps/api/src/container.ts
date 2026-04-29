@@ -10,8 +10,8 @@ import {
   IInventoryRepository,
   IUserRepository
 } from '@repo/repositories';
-import { ProductController } from './controllers/product.controller';
-import { InventoryController } from './controllers/inventory.controller';
+import { ProductController } from './controllers/product.controller.js';
+import { InventoryController } from './controllers/inventory.controller.js';
 
 // ─── Configuration ───────────────────────────────────────────────────────────
 const useMock = process.env.USE_MOCK_DATA === 'true';
@@ -32,4 +32,4 @@ export const userRepository: IUserRepository = useMock
 // ─── Controllers ─────────────────────────────────────────────────────────────
 // Lưu ý: Chúng ta inject repository vào controller tại đây.
 export const productController = new ProductController(productRepository);
-export const inventoryController = new InventoryController(inventoryRepository);
+export const inventoryController = new InventoryController(inventoryRepository, productRepository);

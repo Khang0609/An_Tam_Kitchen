@@ -1,5 +1,5 @@
 import type { PrismaClient } from '@repo/database';
-import { IUserRepository } from './interfaces';
+import { IUserRepository } from './interfaces.js';
 import { User } from '@repo/types';
 
 /**

@@ -326,7 +326,7 @@ function DashboardMockup() {
               <div>
                 <p className="text-sm font-semibold">Khu vực bảo quản</p>
                 <p className="mt-1 text-xs text-muted-foreground">
-                  Cập nhật theo mock data
+                  Cập nhật theo dữ liệu thực
                 </p>
               </div>
               <MapPin aria-hidden="true" className="size-5 text-primary" />

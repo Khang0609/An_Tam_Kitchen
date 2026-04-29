@@ -1,18 +1,19 @@
-import { Router } from 'express';
-import { inventoryController } from '@/container';
+import express, { Router } from 'express';
+import { inventoryController } from '../container.js';
+import { authenticate } from '../middleware/auth.middleware.js';
 import {
   validateBody,
   validateParams,
   CreateInventoryItemBodySchema,
   UpdateInventoryItemBodySchema,
   InventoryItemIdParamSchema,
-} from '@/validation/inventory.validation';
+} from '../validation/inventory.validation.js';
 
 
-const router: Router = Router();
+const router = express.Router() as any;
 
-// Lưu ý: Middleware authenticate (JWT) nên được áp dụng ở đây hoặc trong index.ts
-// để đảm bảo req.userId được thiết lập chính xác.
+// Áp dụng xác thực cho tất cả các route trong inventory
+router.use(authenticate);
 
 /**
  * POST /inventory
