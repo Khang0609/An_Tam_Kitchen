@@ -47,6 +47,7 @@ USER expressjs
 ENV NODE_ENV=production
 ENV PORT=3001
 EXPOSE 3001
-CMD echo "Running database migrations..." && pnpm --filter @repo/database db:push; echo "Starting server..." && node apps/api/dist/index.js
+CMD ["node", "apps/api/dist/index.js"]
+
 
 
