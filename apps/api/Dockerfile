@@ -11,12 +11,6 @@ RUN npm install -g turbo
 WORKDIR /app
 COPY . .
 
-# Debug: Xem chính xác cấu trúc file mà Docker đang thấy
-RUN echo "--- ROOT FILES ---" && ls -la
-RUN echo "--- WORKSPACE FILES ---" && find . -name "package.json" -maxdepth 3
-RUN echo "--- CHECKING LOCKFILE ---" && cat pnpm-lock.yaml | head -n 5
-
-# Thử prune với scope cụ thể
 RUN turbo prune --scope=api --docker
 
 # Stage 2: Builder
@@ -33,14 +27,24 @@ FROM base AS runner
 WORKDIR /app
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 expressjs
-USER expressjs
 
+# Copy pruned json and lockfile to install prod deps
+COPY --from=pruner /app/out/json/ .
+COPY --from=pruner /app/out/pnpm-lock.yaml ./pnpm-lock.yaml
+RUN pnpm install --prod --frozen-lockfile
+
+# Generate Prisma Client again in the runner stage
+COPY --from=builder /app/packages/database/prisma ./packages/database/prisma
+RUN npx prisma generate --schema=./packages/database/prisma/schema.prisma
+
+# Copy built code and other necessary folders
 COPY --from=builder /app/apps/api/dist ./apps/api/dist
 COPY --from=builder /app/apps/api/package.json ./apps/api/package.json
-COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/packages ./packages 
+
+USER expressjs
 
 ENV NODE_ENV=production
 ENV PORT=3001
 EXPOSE 3001
-CMD ["node", "apps/api/dist/index.js"]
+CMD pnpm --filter @repo/database db:push && node apps/api/dist/index.js

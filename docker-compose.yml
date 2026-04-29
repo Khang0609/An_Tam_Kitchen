@@ -10,18 +10,18 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - ./data/db:/var/lib/postgresql/data
 
   api:
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: ./apps/api/Dockerfile
     container_name: antam_api
     ports:
       - "3001:3001"
     environment:
-      - DATABASE_URL=postgresql://postgres.eshpbdohubpcknycubgg:BKI_An_tam_Kitchen@aws-1-ap-northeast-2.pooler.supabase.com:6543/postgres?pgbouncer=true
-      - DIRECT_URL=postgresql://postgres.eshpbdohubpcknycubgg:BKI_An_tam_Kitchen2026@aws-1-ap-northeast-2.pooler.supabase.com:5432/postgres
+      - DATABASE_URL=${DATABASE_URL:-postgresql://user:password@db:5432/antam_kitchen?schema=public}
+      - DIRECT_URL=${DIRECT_URL:-postgresql://user:password@db:5432/antam_kitchen?schema=public}
       - PORT=3001
     depends_on:
       - db
@@ -38,5 +38,3 @@ services:
     depends_on:
       - api
 
-volumes:
-  postgres_data:

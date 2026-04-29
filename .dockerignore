@@ -1,8 +1,8 @@
-node_modules
-.next
-dist
-.turbo
-out
+**/node_modules
+**/.next
+**/dist
+**/.turbo
+**/out
 .git
 .env
 *.log

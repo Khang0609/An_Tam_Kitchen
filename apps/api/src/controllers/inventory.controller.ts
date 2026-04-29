@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { IInventoryRepository, IProductRepository } from '@repo/repositories';
-import { CreateInventoryItemBody, UpdateInventoryItemBody } from '../validation/inventory.validation';
+import { CreateInventoryItemBody, UpdateInventoryItemBody } from '../validation/inventory.validation.js';
 import { FoodCategory } from '@repo/types';
 
 /**

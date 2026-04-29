@@ -1,13 +1,13 @@
 import express, { Router } from 'express';
-import { productController } from '../container';
-import { authenticate } from '../middleware/auth.middleware';
+import { productController } from '../container.js';
+import { authenticate } from '../middleware/auth.middleware.js';
 import {
   validateBody,
   validateParams,
   CreateProductBodySchema,
   UpdateProductBodySchema,
   ProductIdParamSchema,
-} from '../validation/product.validation';
+} from '../validation/product.validation.js';
 
 
 // ─── Router ───────────────────────────────────────────────────────────────────
