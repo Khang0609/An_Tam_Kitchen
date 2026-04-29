@@ -42,12 +42,17 @@ app.get('/health', (req, res) => {
   res.json({ status: 'OK' });
 });
 
-if (process.env.NODE_ENV !== 'test' && !process.env.VERCEL) {
-  const server = app.listen(Number(port), '0.0.0.0', () => {
-    console.log(`🚀 API Server is running on port ${port}`);
-    console.log(`Environment: ${process.env.NODE_ENV}`);
+console.log('--- API STARTUP DEBUG ---');
+console.log('NODE_ENV:', process.env.NODE_ENV);
+console.log('PORT ENV:', process.env.PORT);
+console.log('VERCEL ENV:', process.env.VERCEL);
+
+if (process.env.NODE_ENV !== 'test') {
+  app.listen(Number(port), '0.0.0.0', () => {
+    console.log(`🚀 API Server is strictly listening on 0.0.0.0:${port}`);
   });
 }
+
 
 
 export default app;
