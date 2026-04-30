@@ -11,9 +11,10 @@ import {
   ScanLine,
   Sparkles,
 } from "lucide-react";
-import { motion, useReducedMotion } from "motion/react";
+import { motion } from "motion/react";
 import Link from "next/link";
 import type { ComponentType } from "react";
+import { useReducedMotion } from "@/hooks/use-reduced-motion";
 import { AppHeader, FoodStatusBadge } from "@/components/foundation";
 import { Button } from "@/components/ui/button";
 import {

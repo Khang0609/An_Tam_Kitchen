@@ -15,7 +15,8 @@ import {
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import type { ComponentType, ReactNode } from "react";
-import { motion, useReducedMotion } from "motion/react";
+import { motion } from "motion/react";
+import { useReducedMotion } from "@/hooks/use-reduced-motion";
 import type { FoodStatus } from "@repo/types";
 import {
   EmptyState,
@@ -188,7 +189,9 @@ export function FoodDetailView({ foodId }: { foodId: string }) {
             <DetailLine
               icon={Clock3}
               label="Số ngày đã mở"
-              value={openedDays === null ? "Chưa ghi nhận" : `${openedDays} ngày`}
+              value={
+                openedDays === null ? "Chưa ghi nhận" : `${openedDays} ngày`
+              }
             />
             <DetailLine
               icon={MapPin}
@@ -233,7 +236,7 @@ export function FoodDetailView({ foodId }: { foodId: string }) {
               "mt-4 rounded-2xl border p-4 text-sm leading-6",
               food.status === "not_recommended"
                 ? "border-rose-200 bg-rose-50 text-rose-950"
-                : "border-amber-200 bg-amber-50 text-amber-950"
+                : "border-amber-200 bg-amber-50 text-amber-950",
             )}
           >
             <p className="font-semibold">Khuyến nghị theo trạng thái</p>
@@ -275,8 +278,8 @@ function DetailLine({ icon: Icon, label, value, muted }: DetailLineProps) {
         </span>
         <span
           className={cn(
-            "mt-2 block break-words text-base font-semibold leading-6",
-            muted ? "text-muted-foreground" : "text-foreground"
+            "mt-2 block wrap-break-words text-base font-semibold leading-6",
+            muted ? "text-muted-foreground" : "text-foreground",
           )}
         >
           {value}
@@ -290,7 +293,10 @@ function BackToDashboard({ className }: { className?: string }) {
   return (
     <Button
       asChild
-      className={cn("h-11 w-full justify-center rounded-2xl sm:w-fit", className)}
+      className={cn(
+        "h-11 w-full justify-center rounded-2xl sm:w-fit",
+        className,
+      )}
       variant="outline"
     >
       <Link href="/#digital-fridge">

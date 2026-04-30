@@ -13,11 +13,12 @@ import {
   SearchCheck,
   Sparkles,
 } from "lucide-react";
-import { motion, useReducedMotion } from "motion/react";
+import { motion } from "motion/react";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import type { ComponentType, ReactNode } from "react";
 import type { FoodStatus } from "@repo/types";
+import { useReducedMotion } from "@/hooks/use-reduced-motion";
 import {
   EmptyState,
   ErrorState,
@@ -184,7 +185,7 @@ export function DigitalFridgeDashboard() {
             action={
               <Tabs
                 className="w-full sm:w-auto"
-                onValueChange={(value) => setFilter(value as FilterValue)}
+                onValueChange={(value: string) => setFilter(value as FilterValue)}
                 value={filter}
               >
                 <TabsList className="h-auto w-full flex-wrap justify-start gap-1 rounded-2xl p-1 sm:w-auto">
