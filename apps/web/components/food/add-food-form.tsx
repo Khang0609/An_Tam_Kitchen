@@ -2,7 +2,7 @@
 
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
 import { format, subDays } from "date-fns";
-import { AlertCircle, ArrowLeft, LoaderCircle, Sparkles } from "lucide-react";
+import { AlertCircle, ArrowLeft, LoaderCircle, Lock, Sparkles } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Controller, useForm } from "react-hook-form";
@@ -19,7 +19,28 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { getAuthErrorMessage, isAuthError } from "@/lib/api/client";
 import { createFood } from "@/lib/api/foods";
+import type { AddFoodCategory, AddFoodStorageLocation } from "@/lib/api/types";
+import { clearAuthHint, getAuthRequiredHref } from "@/lib/auth-session";
+
+const categoryOptions: Array<{ value: AddFoodCategory; label: string }> = [
+  { value: "milk", label: "Sữa" },
+  { value: "sauce", label: "Nước sốt / gia vị" },
+  { value: "canned_food", label: "Đồ hộp" },
+  { value: "sausage", label: "Xúc xích / đồ chế biến" },
+  { value: "drink", label: "Đồ uống" },
+  { value: "other", label: "Khác" },
+];
+
+const storageLocationOptions: Array<{
+  value: AddFoodStorageLocation;
+  label: string;
+}> = [
+  { value: "fridge", label: "Ngăn mát" },
+  { value: "freezer", label: "Ngăn đông" },
+  { value: "room", label: "Nhiệt độ phòng" },
+];
 import { createUserProduct } from "@/lib/api/user-products";
 import {
   type AddFoodCategory,
@@ -105,7 +126,16 @@ export function AddFoodForm() {
       ]);
       router.push("/#digital-fridge");
       router.refresh();
-    } catch {
+    } catch (error) {
+      if (isAuthError(error)) {
+        clearAuthHint();
+        setError("root", {
+          type: "auth",
+          message: getAuthErrorMessage(error),
+        });
+        return;
+      }
+
       setError("root", {
         message:
           "Chưa thể lưu món này. Bạn thử lại sau ít phút hoặc kiểm tra kết nối nhé.",
@@ -124,6 +154,9 @@ export function AddFoodForm() {
     });
   }
 
+  const isAuthRootError = errors.root?.type === "auth";
+  const loginHref = getAuthRequiredHref("/foods/new");
+
   return (
     <form
       className="rounded-3xl border bg-background p-5 shadow-sm sm:p-6"
@@ -135,6 +168,16 @@ export function AddFoodForm() {
           <AlertTitle>Chưa lưu được thực phẩm</AlertTitle>
           <AlertDescription className="text-amber-900">
             {errors.root.message}
+            {isAuthRootError ? (
+              <div className="mt-3">
+                <Button asChild className="rounded-2xl" size="sm">
+                  <Link href={loginHref}>
+                    <Lock aria-hidden={true} className="size-4" />
+                    Đăng nhập
+                  </Link>
+                </Button>
+              </div>
+            ) : null}
           </AlertDescription>
         </Alert>
       ) : null}

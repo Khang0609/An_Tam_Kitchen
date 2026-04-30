@@ -11,7 +11,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, useSyncExternalStore } from "react";
 import { AppHeader } from "@/components/foundation";
 import { Button } from "@/components/ui/button";
 import {
@@ -25,18 +25,42 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { login } from "@/lib/api/auth";
+import { getSafeNextPath, setAuthHint } from "@/lib/auth-session";
 
 const GUEST_EMAIL = "guest@antam.local";
 const GUEST_PASSWORD = "Guest@123456";
 
+function subscribeToLocationSearch() {
+  return () => {};
+}
+
+function getLocationSearchSnapshot() {
+  return window.location.search;
+}
+
+function getServerLocationSearchSnapshot() {
+  return "";
+}
+
 export default function LoginPage() {
   const router = useRouter();
+  const locationSearch = useSyncExternalStore(
+    subscribeToLocationSearch,
+    getLocationSearchSnapshot,
+    getServerLocationSearchSnapshot
+  );
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isGuestLoading, setIsGuestLoading] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
+  const searchParams = new URLSearchParams(locationSearch);
+  const safeNext = getSafeNextPath(searchParams.get("next"));
+  const authRequiredMessage =
+    searchParams.get("reason") === "auth-required"
+      ? "Bạn cần đăng nhập để sử dụng tính năng này."
+      : "";
 
   async function handleLogin(
     loginEmail: string,
@@ -54,9 +78,10 @@ export default function LoginPage() {
 
     try {
       await login(loginEmail, loginPassword);
-      setMessage("Đăng nhập thành công! Đang vào trang chủ...");
+      setAuthHint();
+      setMessage("Đăng nhập thành công! Đang chuyển tiếp...");
       setTimeout(() => {
-        router.push("/");
+        router.push(safeNext ?? "/");
       }, 1000);
     } catch (err) {
       if (isGuest) {
@@ -167,6 +192,12 @@ export default function LoginPage() {
                   <div className="flex items-start gap-2 rounded-lg bg-accent/50 p-3 text-sm text-accent-foreground">
                     <CheckCircle2 className="mt-0.5 size-4 shrink-0" />
                     <span>{message}</span>
+                  </div>
+                ) : null}
+                {authRequiredMessage ? (
+                  <div className="flex items-start gap-2 rounded-lg bg-accent/50 p-3 text-sm text-accent-foreground">
+                    <Lock className="mt-0.5 size-4 shrink-0" />
+                    <span>{authRequiredMessage}</span>
                   </div>
                 ) : null}
                 {error ? (

@@ -1,5 +1,5 @@
-import { apiRequest } from "@/lib/api/client";
-import { addMockFoodRecord, getMockFoodRecords } from "@/lib/api/mock-foods";
+import { apiRequest, isAuthError } from "@/lib/api/client";
+import { getMockFoodRecords } from "@/lib/api/mock-foods";
 import type {
   CreateFoodInput,
   CreateFoodOptions,
@@ -42,6 +42,7 @@ export async function listFoods(
       usingMockFallback: false,
     };
   } catch (error) {
+    if (isAuthError(error)) throw error;
     if (!useMockFallback) throw error;
 
     return {
@@ -72,7 +73,9 @@ export async function createFood(
       usingMockFallback: false,
     };
   } catch (error) {
-    console.error("Failed to create food via API:", error);
+    if (!isAuthError(error)) {
+      console.error("Failed to create food via API:", error);
+    }
     throw error; // Không âm thầm dùng mock nữa
   }
 }
