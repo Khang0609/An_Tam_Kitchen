@@ -92,17 +92,17 @@ export const login = async (req: Request, res: Response): Promise<any> => {
     await userRepository.update(user.id, { refreshToken });
 
     const isProd = process.env.NODE_ENV === "production";
-    res.cookie("accessToken", accessToken, {
+    const cookieOptions: any = {
       httpOnly: true,
-      secure: true, // Always true for cross-domain SameSite=None
-      sameSite: "none",
+      secure: isProd, // Chỉ bắt buộc Secure (HTTPS) khi ở Production
+      sameSite: isProd ? "none" : "lax", // Lax là đủ cho localhost
       maxAge: 15 * 60 * 1000,
-    });
+    };
+
+    res.cookie("accessToken", accessToken, cookieOptions);
 
     res.cookie("refreshToken", refreshToken, {
-      httpOnly: true,
-      secure: true,
-      sameSite: "none",
+      ...cookieOptions,
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
@@ -133,16 +133,15 @@ export const logout = async (req: Request, res: Response): Promise<any> => {
       }
     }
 
-    res.clearCookie("accessToken", {
+    const isProd = process.env.NODE_ENV === "production";
+    const clearOptions: any = {
       httpOnly: true,
-      secure: true,
-      sameSite: "none",
-    });
-    res.clearCookie("refreshToken", {
-      httpOnly: true,
-      secure: true,
-      sameSite: "none",
-    });
+      secure: isProd,
+      sameSite: isProd ? "none" : "lax",
+    };
+
+    res.clearCookie("accessToken", clearOptions);
+    res.clearCookie("refreshToken", clearOptions);
 
     return res.status(200).json({ message: "Logged out successfully" });
   } catch (error) {
@@ -223,10 +222,11 @@ export const guestLogin = async (req: Request, res: Response): Promise<any> => {
       expiresIn: "2h", // Guest session shorter
     });
 
+    const isProd = process.env.NODE_ENV === "production";
     res.cookie("accessToken", accessToken, {
       httpOnly: true,
-      secure: true,
-      sameSite: "none",
+      secure: isProd,
+      sameSite: isProd ? "none" : "lax",
       maxAge: 2 * 60 * 60 * 1000,
     });
 

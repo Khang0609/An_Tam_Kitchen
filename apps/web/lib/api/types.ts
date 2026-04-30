@@ -1,22 +1,28 @@
-import type {
+import {
+  type FoodCategory,
+  type FoodStatus,
+  type InventoryItem,
+  type Product,
+  type StorageLocation,
+  type AddFoodCategory,
+  type AddFoodStorageLocation,
+  AddFoodCategoryEnum,
+} from "@repo/types";
+
+export type {
   FoodCategory,
   FoodStatus,
   InventoryItem,
   Product,
   StorageLocation,
-} from "@repo/types";
+  AddFoodCategory,
+  AddFoodStorageLocation,
+};
+export { AddFoodCategoryEnum };
 
 export type FoodDataSource = "api" | "mock";
 
-export type AddFoodCategory =
-  | "milk"
-  | "sauce"
-  | "canned_food"
-  | "sausage"
-  | "drink"
-  | "other";
-
-export type AddFoodStorageLocation = "fridge" | "freezer" | "room";
+// Các type này đã được chuyển ra @repo/types
 
 export type FoodStatusSource = "backend" | "temporary_rule";
 

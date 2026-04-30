@@ -5,6 +5,7 @@ import cookieParser from 'cookie-parser';
 import authRoutes from '@/routes/auth.routes.js';
 import productRoutes from '@/routes/product.routes.js';
 import inventoryRoutes from '@/routes/inventory.routes.js';
+import userProductRoutes from '@/routes/user-product.routes.js';
 
 dotenv.config();
 
@@ -41,6 +42,7 @@ app.use(cookieParser());
 app.use('/api/auth', authRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/inventory', inventoryRoutes);
+app.use('/api/user-products', userProductRoutes);
 app.get('/', (req, res) => {
   res.json({ message: 'Welcome to An Tâm Kitchen API' });
 });

@@ -20,6 +20,7 @@ model User {
   updatedAt      DateTime        @updatedAt
   posts          Post[]
   inventoryItems InventoryItem[]
+  userProducts   UserProduct[]
 }
 
 model Post {
@@ -89,4 +90,16 @@ model FoodNotification {
   message         String
   isRead          Boolean          @default(false)
   createdAt       DateTime         @default(now())
+}
+
+model UserProduct {
+  id              String   @id @default(uuid(7))
+  userId          String
+  user            User     @relation(fields: [userId], references: [id])
+  name            String
+  category        String
+  storageLocation String   @map("storage_location")
+  note            String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 }

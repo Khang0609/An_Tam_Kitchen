@@ -1,11 +1,11 @@
 import { addDays, subDays } from "date-fns";
-import type { FoodCategory, StorageLocation } from "@repo/types";
 import type {
+  FoodCategory,
+  StorageLocation,
   AddFoodCategory,
   AddFoodStorageLocation,
-  CreateFoodInput,
-  FoodApiRecord,
-} from "@/lib/api/types";
+} from "@repo/types";
+import type { CreateFoodInput, FoodApiRecord } from "@/lib/api/types";
 
 const USER_ID = "0192f9a5-3c1a-7d7e-8b63-77e859c3a001";
 const MOCK_STORAGE_KEY = "bep-an-tam:mock-foods";
@@ -157,8 +157,9 @@ export function addMockFoodRecord(
   now = new Date()
 ): FoodApiRecord {
   const openedAt = parseDateInput(input.openedAt) ?? now;
-  const category = categoryToFoodCategory[input.category];
-  const daysAfterOpen = daysAfterOpenByCategory[input.category];
+  const category = categoryToFoodCategory[input.category as AddFoodCategory];
+  const daysAfterOpen =
+    daysAfterOpenByCategory[input.category as AddFoodCategory];
   const record: FoodApiRecord = {
     id: createMockId(),
     userId: USER_ID,
@@ -169,7 +170,8 @@ export function addMockFoodRecord(
     expiryDate:
       parseDateInput(input.expiryDate) ?? addDays(openedAt, daysAfterOpen),
     hasExplicitExpiryDate: Boolean(input.expiryDate),
-    location: storageToApiLocation[input.storageLocation],
+    location:
+      storageToApiLocation[input.storageLocation as AddFoodStorageLocation],
     quantity: "",
     notes: input.notes?.trim() || undefined,
     createdAt: now,

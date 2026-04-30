@@ -10,7 +10,7 @@ import {
 } from '../validation/inventory.validation.js';
 
 
-const router = express.Router() as any;
+const router: Router = express.Router();
 
 // Áp dụng xác thực cho tất cả các route trong inventory
 router.use(authenticate);

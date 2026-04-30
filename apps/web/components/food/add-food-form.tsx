@@ -20,25 +20,15 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { createFood } from "@/lib/api/foods";
-import type { AddFoodCategory, AddFoodStorageLocation } from "@/lib/api/types";
+import { createUserProduct } from "@/lib/api/user-products";
+import {
+  type AddFoodCategory,
+  type AddFoodStorageLocation,
+  CATEGORY_OPTIONS,
+  STORAGE_LOCATION_OPTIONS,
+} from "@repo/types";
 
-const categoryOptions: Array<{ value: AddFoodCategory; label: string }> = [
-  { value: "milk", label: "Sữa" },
-  { value: "sauce", label: "Nước sốt / gia vị" },
-  { value: "canned_food", label: "Đồ hộp" },
-  { value: "sausage", label: "Xúc xích / đồ chế biến" },
-  { value: "drink", label: "Đồ uống" },
-  { value: "other", label: "Khác" },
-];
-
-const storageLocationOptions: Array<{
-  value: AddFoodStorageLocation;
-  label: string;
-}> = [
-  { value: "fridge", label: "Ngăn mát" },
-  { value: "freezer", label: "Ngăn đông" },
-  { value: "room", label: "Nhiệt độ phòng" },
-];
+// Các options đã được chuyển ra @repo/types
 
 const addFoodFormSchema = z.object({
   name: z.string().trim().min(1, "Tên sản phẩm không được để trống."),
@@ -97,14 +87,22 @@ export function AddFoodForm() {
     }
 
     try {
-      await createFood({
-        name: values.name,
-        category,
-        openedAt: values.openedAt,
-        expiryDate: values.expiryDate || undefined,
-        storageLocation,
-        notes: values.notes || undefined,
-      });
+      await Promise.all([
+        createFood({
+          name: values.name,
+          category,
+          openedAt: values.openedAt,
+          expiryDate: values.expiryDate || undefined,
+          storageLocation,
+          notes: values.notes || undefined,
+        }),
+        createUserProduct({
+          name: values.name,
+          category,
+          storageLocation,
+          note: values.notes || undefined,
+        }),
+      ]);
       router.push("/#digital-fridge");
       router.refresh();
     } catch {
@@ -182,7 +180,7 @@ export function AddFoodForm() {
                     <SelectValue placeholder="Chọn nhóm" />
                   </SelectTrigger>
                   <SelectContent>
-                    {categoryOptions.map((option) => (
+                    {CATEGORY_OPTIONS.map((option) => (
                       <SelectItem key={option.value} value={option.value}>
                         {option.label}
                       </SelectItem>
@@ -216,7 +214,7 @@ export function AddFoodForm() {
                     <SelectValue placeholder="Chọn vị trí" />
                   </SelectTrigger>
                   <SelectContent>
-                    {storageLocationOptions.map((option) => (
+                    {STORAGE_LOCATION_OPTIONS.map((option) => (
                       <SelectItem key={option.value} value={option.value}>
                         {option.label}
                       </SelectItem>
@@ -335,7 +333,7 @@ function parseDateInput(value: string) {
 }
 
 function toAddFoodCategory(value: string): AddFoodCategory | null {
-  return categoryOptions.some((option) => option.value === value)
+  return CATEGORY_OPTIONS.some((option) => option.value === value)
     ? (value as AddFoodCategory)
     : null;
 }
@@ -343,7 +341,7 @@ function toAddFoodCategory(value: string): AddFoodCategory | null {
 function toAddFoodStorageLocation(
   value: string
 ): AddFoodStorageLocation | null {
-  return storageLocationOptions.some((option) => option.value === value)
+  return STORAGE_LOCATION_OPTIONS.some((option) => option.value === value)
     ? (value as AddFoodStorageLocation)
     : null;
 }

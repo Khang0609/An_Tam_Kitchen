@@ -6,10 +6,10 @@ import {
   type FoodStatus,
   type Product,
   type StorageLocation,
+  type AddFoodCategory,
 } from "@repo/types";
 import { resolveFoodStatus } from "@/lib/food-rules";
 import type {
-  AddFoodCategory,
   FoodApiRecord,
   FoodDataSource,
   FoodItemViewModel,

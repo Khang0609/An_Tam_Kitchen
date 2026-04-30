@@ -39,11 +39,8 @@ services:
       - /app/node_modules
       - /app/apps/api/node_modules
       - /app/packages/database/node_modules
-      - /app/packages/database/dist
       - /app/packages/repositories/node_modules
-      - /app/packages/repositories/dist
       - /app/packages/types/node_modules
-      - /app/packages/types/dist
 
   web:
     build:
@@ -66,10 +63,7 @@ services:
       - /app/apps/web/node_modules
       - /app/apps/web/.next
       - /app/packages/database/node_modules
-      - /app/packages/database/dist
       - /app/packages/repositories/node_modules
-      - /app/packages/repositories/dist
       - /app/packages/types/node_modules
-      - /app/packages/types/dist
 
 

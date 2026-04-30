@@ -51,3 +51,14 @@ export {
 } from "./inventory";
 
 export { BarcodeScanResultSchema, type BarcodeScanResult } from "./scans";
+
+export {
+  AddFoodCategoryEnum,
+  type AddFoodCategory,
+  CATEGORY_OPTIONS,
+  AddFoodStorageLocationEnum,
+  type AddFoodStorageLocation,
+  STORAGE_LOCATION_OPTIONS,
+} from "./food-constants";
+
+export { UserProductSchema, type UserProduct } from "./user_products";
