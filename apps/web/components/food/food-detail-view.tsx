@@ -25,14 +25,17 @@ import {
 } from "@/components/foundation";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
+import { getAuthErrorMessage, isAuthError } from "@/lib/api/client";
 import { getFoodById } from "@/lib/api/foods";
 import type { FoodItemViewModel } from "@/lib/api/types";
+import { clearAuthHint, getAuthRequiredHref } from "@/lib/auth-session";
 import { cn } from "@/lib/utils";
 
 type FoodDetailViewState = {
   food: FoodItemViewModel | null;
   isLoading: boolean;
   error: string | null;
+  isAuthRequired: boolean;
 };
 
 type DetailLineProps = {
@@ -61,13 +64,19 @@ export function FoodDetailView({ foodId }: { foodId: string }) {
     food: null,
     isLoading: true,
     error: null,
+    isAuthRequired: false,
   });
 
   useEffect(() => {
     const controller = new AbortController();
 
     async function loadFood() {
-      setState((current) => ({ ...current, isLoading: true, error: null }));
+      setState((current) => ({
+        ...current,
+        isLoading: true,
+        error: null,
+        isAuthRequired: false,
+      }));
 
       try {
         const result = await getFoodById(foodId, {
@@ -78,17 +87,25 @@ export function FoodDetailView({ foodId }: { foodId: string }) {
           food: result.item,
           isLoading: false,
           error: result.error?.message ?? null,
+          isAuthRequired: false,
         });
       } catch (error) {
         if (controller.signal.aborted) return;
 
+        const isAuthRequired = isAuthError(error);
+        if (isAuthRequired) {
+          clearAuthHint();
+        }
+
         setState({
           food: null,
           isLoading: false,
-          error:
-            error instanceof Error
+          error: isAuthRequired
+            ? getAuthErrorMessage(error)
+            : error instanceof Error
               ? error.message
               : "Chưa tải được chi tiết thực phẩm.",
+          isAuthRequired,
         });
       }
     }
@@ -110,6 +127,20 @@ export function FoodDetailView({ foodId }: { foodId: string }) {
   }
 
   if (!state.food) {
+    if (state.isAuthRequired) {
+      return (
+        <DetailShell>
+          <AuthRequiredDetail
+            message={
+              state.error ?? "Bạn cần đăng nhập để xem chi tiết thực phẩm này."
+            }
+            targetPath={`/foods/${foodId}`}
+          />
+          <BackToDashboard className="mt-4" />
+        </DetailShell>
+      );
+    }
+
     return (
       <DetailShell>
         <EmptyState
@@ -260,6 +291,29 @@ function DetailShell({ children }: { children: ReactNode }) {
     <div className="mx-auto grid w-full max-w-5xl gap-5 px-4 py-6 sm:px-6 sm:py-12 lg:px-8">
       {children}
     </div>
+  );
+}
+
+function AuthRequiredDetail({
+  message,
+  targetPath,
+}: {
+  message: string;
+  targetPath: string;
+}) {
+  return (
+    <Alert className="border-amber-200 bg-amber-50 text-amber-950">
+      <AlertCircle aria-hidden={true} className="size-4" />
+      <AlertTitle>Cần đăng nhập</AlertTitle>
+      <AlertDescription className="text-amber-900">
+        {message}
+        <div className="mt-3">
+          <Button asChild className="rounded-2xl" size="sm">
+            <Link href={getAuthRequiredHref(targetPath)}>Đăng nhập</Link>
+          </Button>
+        </div>
+      </AlertDescription>
+    </Alert>
   );
 }
 

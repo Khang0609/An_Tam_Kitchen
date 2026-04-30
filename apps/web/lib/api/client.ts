@@ -1,3 +1,5 @@
+import { clearAuthHint } from "@/lib/auth-session";
+
 export class ApiError extends Error {
   readonly status?: number;
   readonly payload?: unknown;
@@ -9,6 +11,15 @@ export class ApiError extends Error {
     this.payload = payload;
   }
 }
+
+const AUTH_REQUIRED_MESSAGE = "Bạn cần đăng nhập để sử dụng tính năng này.";
+const SESSION_EXPIRED_MESSAGE =
+  "Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.";
+const AUTH_ERROR_PATTERNS = [
+  "authentication required",
+  "invalid or expired token",
+  "unauthorized",
+];
 
 const DEFAULT_API_BASE_URL = "http://localhost:3001";
 
@@ -49,14 +60,67 @@ export async function apiRequest<T>(
   const payload = await readResponsePayload(response);
 
   if (!response.ok) {
-    throw new ApiError(
+    const error = new ApiError(
       getErrorMessage(payload, response.statusText),
       response.status,
       payload
     );
+
+    if (isAuthError(error)) {
+      clearAuthHint();
+    }
+
+    throw error;
   }
 
   return unwrapApiResponse(payload) as T;
+}
+
+export function isAuthError(error: unknown) {
+  if (error instanceof ApiError && error.status === 401) return true;
+
+  const message = getComparableErrorText(error);
+  return AUTH_ERROR_PATTERNS.some((pattern) => message.includes(pattern));
+}
+
+export function getAuthErrorMessage(error: unknown) {
+  const message = getComparableErrorText(error);
+
+  if (message.includes("invalid or expired token")) {
+    return SESSION_EXPIRED_MESSAGE;
+  }
+
+  return AUTH_REQUIRED_MESSAGE;
+}
+
+function getComparableErrorText(error: unknown) {
+  const parts: string[] = [];
+
+  if (error instanceof Error) {
+    parts.push(error.message);
+  }
+
+  if (error instanceof ApiError) {
+    parts.push(readPayloadMessage(error.payload));
+  } else {
+    parts.push(readPayloadMessage(error));
+  }
+
+  return parts.filter(Boolean).join(" ").toLowerCase();
+}
+
+function readPayloadMessage(payload: unknown) {
+  if (typeof payload === "string") return payload;
+
+  if (payload && typeof payload === "object") {
+    const maybeError = "error" in payload ? payload.error : undefined;
+    const maybeMessage = "message" in payload ? payload.message : undefined;
+
+    if (typeof maybeError === "string") return maybeError;
+    if (typeof maybeMessage === "string") return maybeMessage;
+  }
+
+  return "";
 }
 
 function getErrorMessage(payload: unknown, fallback: string) {

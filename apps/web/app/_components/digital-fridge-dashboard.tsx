@@ -7,6 +7,7 @@ import {
   CalendarDays,
   Clock3,
   ClipboardCheck,
+  Lock,
   MapPin,
   Plus,
   Refrigerator,
@@ -30,6 +31,7 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useFoods } from "@/hooks/use-foods";
 import type { FoodItemViewModel } from "@/lib/api/types";
+import { getAuthRequiredHref, useAuthHint } from "@/lib/auth-session";
 import { cn } from "@/lib/utils";
 
 type FilterValue = "all" | "use_soon" | "check" | "safe";
@@ -49,9 +51,18 @@ const statusPriority: Record<FoodStatus, number> = {
 };
 
 export function DigitalFridgeDashboard() {
-  const { foods, isLoading, error, usingMockFallback, refresh } = useFoods();
+  const {
+    foods,
+    isLoading,
+    error,
+    isAuthRequired,
+    usingMockFallback,
+    refresh,
+  } = useFoods();
   const [filter, setFilter] = useState<FilterValue>("all");
   const reduceMotion = useReducedMotion();
+  const hasAuth = useAuthHint();
+  const addFoodHref = getProtectedHref("/foods/new", hasAuth);
 
   const sortedFoods = useMemo(() => {
     return [...foods].sort((a, b) => {
@@ -103,6 +114,22 @@ export function DigitalFridgeDashboard() {
     );
   }
 
+  if (isAuthRequired && foods.length === 0) {
+    return (
+      <section className="scroll-mt-20 bg-card py-12 sm:py-16" id="digital-fridge">
+        <DashboardShell>
+          <AuthRequiredState
+            description={
+              error ??
+              "Bạn cần đăng nhập để xem danh sách thực phẩm trong tủ lạnh số."
+            }
+            targetPath="/#digital-fridge"
+          />
+        </DashboardShell>
+      </section>
+    );
+  }
+
   if (error && foods.length === 0) {
     return (
       <section className="scroll-mt-20 bg-card py-12 sm:py-16" id="digital-fridge">
@@ -133,7 +160,7 @@ export function DigitalFridgeDashboard() {
             </p>
           </div>
           <Button asChild className="h-12 rounded-2xl px-5 text-base">
-            <Link href="/foods/new">
+            <Link href={addFoodHref}>
               <Plus aria-hidden={true} className="size-4" />
               Thêm thực phẩm
             </Link>
@@ -219,6 +246,7 @@ export function DigitalFridgeDashboard() {
                 {visibleFoods.map((food, index) => (
                   <FoodCard
                     food={food}
+                    hasAuth={hasAuth}
                     index={index}
                     key={food.id}
                     reduceMotion={reduceMotion}
@@ -241,6 +269,31 @@ export function DigitalFridgeDashboard() {
 function DashboardShell({ children }: { children: ReactNode }) {
   return (
     <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">{children}</div>
+  );
+}
+
+function AuthRequiredState({
+  description,
+  targetPath,
+}: {
+  description: string;
+  targetPath: string;
+}) {
+  return (
+    <div className="rounded-3xl border border-amber-200 bg-amber-50/60 px-5 py-10 text-center shadow-sm sm:px-8">
+      <div className="mx-auto mb-4 flex size-12 items-center justify-center rounded-2xl bg-accent text-accent-foreground">
+        <Lock aria-hidden={true} className="size-5" />
+      </div>
+      <h2 className="font-heading text-lg font-semibold text-foreground">
+        Cần đăng nhập để xem tủ lạnh số
+      </h2>
+      <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-muted-foreground">
+        {description}
+      </p>
+      <Button asChild className="mt-5 rounded-2xl">
+        <Link href={getAuthRequiredHref(targetPath)}>Đăng nhập</Link>
+      </Button>
+    </div>
   );
 }
 
@@ -284,10 +337,12 @@ function StatCard({
 
 function FoodCard({
   food,
+  hasAuth,
   index,
   reduceMotion,
 }: {
   food: FoodItemViewModel;
+  hasAuth: boolean;
   index: number;
   reduceMotion: boolean | null;
 }) {
@@ -297,6 +352,8 @@ function FoodCard({
   const openedDays = food.openedAt
     ? Math.max(0, differenceInCalendarDays(new Date(), food.openedAt))
     : null;
+  const detailPath = `/foods/${food.id}`;
+  const detailHref = getProtectedHref(detailPath, hasAuth);
 
   return (
     <motion.article
@@ -342,7 +399,7 @@ function FoodCard({
         </div>
 
         <Button asChild className="h-11 rounded-2xl lg:mt-0" variant="outline">
-          <Link href={`/foods/${food.id}`}>
+          <Link href={detailHref}>
             Xem chi tiết
             <ArrowRight aria-hidden={true} className="size-4" />
           </Link>
@@ -350,6 +407,10 @@ function FoodCard({
       </div>
     </motion.article>
   );
+}
+
+function getProtectedHref(targetPath: string, hasAuth: boolean) {
+  return hasAuth ? targetPath : getAuthRequiredHref(targetPath);
 }
 
 function InfoLine({
