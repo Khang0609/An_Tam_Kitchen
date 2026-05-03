@@ -1,7 +1,16 @@
 import { useSyncExternalStore } from "react";
 
 const AUTH_HINT_KEY = "antam.authenticated";
+const AUTH_USER_HINT_KEY = "antam.user";
 const AUTH_HINT_CHANGE_EVENT = "antam-auth-hint-change";
+let cachedAuthUserRaw: string | null = null;
+let cachedAuthUserHint: AuthUserHint | null = null;
+
+export type AuthUserHint = {
+  id?: string;
+  name?: string;
+  email?: string;
+};
 
 function canUseLocalStorage() {
   return (
@@ -9,11 +18,18 @@ function canUseLocalStorage() {
   );
 }
 
-export function setAuthHint() {
+export function setAuthHint(user?: AuthUserHint | null) {
   if (!canUseLocalStorage()) return;
 
   try {
     window.localStorage.setItem(AUTH_HINT_KEY, "true");
+    const normalizedUser = normalizeAuthUserHint(user);
+    if (normalizedUser) {
+      window.localStorage.setItem(
+        AUTH_USER_HINT_KEY,
+        JSON.stringify(normalizedUser)
+      );
+    }
     notifyAuthHintChange();
   } catch {
     // localStorage is only a UX hint; ignore unavailable storage.
@@ -25,6 +41,7 @@ export function clearAuthHint() {
 
   try {
     window.localStorage.removeItem(AUTH_HINT_KEY);
+    window.localStorage.removeItem(AUTH_USER_HINT_KEY);
     notifyAuthHintChange();
   } catch {
     // localStorage is only a UX hint; ignore unavailable storage.
@@ -38,6 +55,24 @@ export function hasAuthHint() {
     return window.localStorage.getItem(AUTH_HINT_KEY) === "true";
   } catch {
     return false;
+  }
+}
+
+export function getAuthUserHint(): AuthUserHint | null {
+  if (!canUseLocalStorage()) return null;
+
+  try {
+    const rawUser = window.localStorage.getItem(AUTH_USER_HINT_KEY);
+    if (!rawUser) return null;
+    if (rawUser === cachedAuthUserRaw) return cachedAuthUserHint;
+
+    cachedAuthUserRaw = rawUser;
+    cachedAuthUserHint = normalizeAuthUserHint(JSON.parse(rawUser));
+    return cachedAuthUserHint;
+  } catch {
+    cachedAuthUserRaw = null;
+    cachedAuthUserHint = null;
+    return null;
   }
 }
 
@@ -79,6 +114,14 @@ export function useAuthHint() {
   );
 }
 
+export function useAuthUserHint() {
+  return useSyncExternalStore(
+    subscribeToAuthHint,
+    getAuthUserHint,
+    getServerAuthUserSnapshot
+  );
+}
+
 function subscribeToAuthHint(onStoreChange: () => void) {
   if (typeof window === "undefined") return () => {};
 
@@ -95,8 +138,33 @@ function getServerAuthHintSnapshot() {
   return false;
 }
 
+function getServerAuthUserSnapshot() {
+  return null;
+}
+
 function notifyAuthHintChange() {
   if (typeof window === "undefined") return;
 
   window.dispatchEvent(new Event(AUTH_HINT_CHANGE_EVENT));
+}
+
+function normalizeAuthUserHint(user: unknown): AuthUserHint | null {
+  if (!user || typeof user !== "object") return null;
+
+  const record = user as Record<string, unknown>;
+  const normalizedUser: AuthUserHint = {};
+
+  if (typeof record.id === "string" && record.id.trim()) {
+    normalizedUser.id = record.id.trim();
+  }
+
+  if (typeof record.name === "string" && record.name.trim()) {
+    normalizedUser.name = record.name.trim();
+  }
+
+  if (typeof record.email === "string" && record.email.trim()) {
+    normalizedUser.email = record.email.trim();
+  }
+
+  return Object.keys(normalizedUser).length > 0 ? normalizedUser : null;
 }

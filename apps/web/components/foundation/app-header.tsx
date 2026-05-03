@@ -1,5 +1,6 @@
-import Link from "next/link";
 import { Leaf } from "lucide-react";
+import Link from "next/link";
+import { AppHeaderAuthActions } from "@/components/foundation/app-header-auth-actions";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -51,12 +52,7 @@ export function AppHeader({ className }: AppHeaderProps) {
         </nav>
 
         <div className="flex items-center gap-2">
-          <Button asChild size="sm" variant="outline">
-            <Link href="/login">Đăng nhập</Link>
-          </Button>
-          <Button asChild size="sm">
-            <Link href="/signup">Đăng ký</Link>
-          </Button>
+          <AppHeaderAuthActions />
         </div>
       </div>
     </header>
