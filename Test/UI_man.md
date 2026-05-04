@@ -201,3 +201,10 @@ VI. KHUYẾN NGHỊ
 ```
 
 ---
+## 6. DELIVERABLES CUỐI CÙNG 
+
+| # | Deliverable | Định dạng |
+|---|---|---|
+| 1 | Issue Log (có filter theo mức độ) | Excel / Google Sheet |
+| 2 | Test Summary Report tổng quan | Markdown / PDF / Google Docs |
+| 3 | Thư mục ảnh/video đính kèm | Google Drive / thư mục ZIP |

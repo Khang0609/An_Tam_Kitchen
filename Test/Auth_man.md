@@ -110,3 +110,11 @@ Bằng chứng đính kèm:
 2. Mỗi mục test xong ghi lại kết quả vào sheet **Test Summary**.
 3. Khi phát hiện lỗi, ghi luôn **Bug Report** vào GitHub Issues (gắn nhãn `bug`, `security` nếu liên quan bảo mật).
 4. Cuối đợt, gửi link sheet + list issues cho manager và đội dev.
+
+## 4. DELIVERABLES CUỐI CÙNG 
+
+| # | Deliverable | Định dạng |
+|---|---|---|
+| 1 | Issue Log (có filter theo mức độ) | Excel / Google Sheet |
+| 2 | Test Summary Report tổng quan | Markdown / PDF / Google Docs |
+| 3 | Thư mục ảnh/video đính kèm | Google Drive / thư mục ZIP |
