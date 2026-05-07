@@ -5,23 +5,27 @@ import {
   BellRing,
   CalendarDays,
   ClipboardCheck,
+  Lock,
   MapPin,
   Plus,
   Refrigerator,
   ScanLine,
   Sparkles,
 } from "lucide-react";
-import { motion, useReducedMotion } from "motion/react";
+import { motion } from "motion/react";
 import Link from "next/link";
 import type { ComponentType } from "react";
+import { useReducedMotion } from "@/hooks/use-reduced-motion";
 import { AppHeader, FoodStatusBadge } from "@/components/foundation";
 import { Button } from "@/components/ui/button";
 import {
   Card,
+  CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { getAuthRequiredHref, useAuthHint } from "@/lib/auth-session";
 import { cn } from "@/lib/utils";
 import { DigitalFridgeDashboard } from "./digital-fridge-dashboard";
 
@@ -100,6 +104,10 @@ const foodRows: FoodRow[] = [
 
 export function LandingPage() {
   const reduceMotion = useReducedMotion();
+  const hasAuth = useAuthHint();
+  const addFoodHref = hasAuth
+    ? "/foods/new"
+    : getAuthRequiredHref("/foods/new");
   const motionProps = reduceMotion
     ? {}
     : {
@@ -147,7 +155,7 @@ export function LandingPage() {
                   className="h-12 justify-center rounded-2xl px-5 text-base"
                   variant="outline"
                 >
-                  <Link href="/foods/new">
+                  <Link href={addFoodHref}>
                     <Plus aria-hidden="true" className="size-4" />
                     Thêm thực phẩm
                   </Link>
@@ -180,12 +188,12 @@ export function LandingPage() {
                     }
               }
             >
-              <DashboardMockup />
+              {hasAuth ? <DashboardMockup /> : <LockedHeroPreview />}
             </motion.div>
           </div>
         </section>
 
-        <DigitalFridgeDashboard />
+        {hasAuth ? <DigitalFridgeDashboard /> : <LockedDigitalFridgePrompt />}
 
         <section className="scroll-mt-20 bg-card py-12 sm:py-16" id="features">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -289,12 +297,106 @@ export function LandingPage() {
                 className="h-12 rounded-2xl px-5 text-base"
                 variant="outline"
               >
-                <Link href="/foods/new">Thêm thực phẩm</Link>
+                <Link href={addFoodHref}>Thêm thực phẩm</Link>
               </Button>
             </div>
           </div>
         </section>
       </main>
+    </div>
+  );
+}
+
+function LockedDigitalFridgePrompt() {
+  const loginHref = getAuthRequiredHref("/#digital-fridge");
+
+  return (
+    <section className="scroll-mt-20 bg-card py-12 sm:py-16" id="digital-fridge">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Card className="rounded-3xl border bg-background shadow-sm">
+          <CardHeader className="items-center px-5 pt-8 text-center sm:px-8 sm:pt-10">
+            <span className="mb-3 flex size-12 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-sm">
+              <Lock aria-hidden={true} className="size-5" />
+            </span>
+            <p className="text-sm font-semibold uppercase tracking-[0.14em] text-primary">
+              Tủ lạnh số
+            </p>
+            <CardTitle className="mt-2 text-2xl font-semibold leading-tight tracking-normal sm:text-3xl">
+              Đăng nhập để xem tủ lạnh số của bạn
+            </CardTitle>
+            <CardDescription className="max-w-2xl text-base leading-7">
+              Theo dõi thực phẩm đã mở nắp, hạn dùng và món nên dùng trước sau
+              khi đăng nhập.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="px-5 pb-8 sm:px-8 sm:pb-10">
+            <div className="flex flex-col justify-center gap-3 sm:flex-row">
+              <Button asChild className="h-11 rounded-2xl px-5">
+                <Link href={loginHref}>Đăng nhập</Link>
+              </Button>
+              <Button
+                asChild
+                className="h-11 rounded-2xl px-5"
+                variant="outline"
+              >
+                <Link href="/signup">Đăng ký</Link>
+              </Button>
+              <Button
+                asChild
+                className="h-11 rounded-2xl px-5"
+                variant="secondary"
+              >
+                <Link href={loginHref}>Dùng thử tài khoản khách</Link>
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    </section>
+  );
+}
+
+function LockedHeroPreview() {
+  return (
+    <div className="rounded-[2rem] border bg-card p-5 shadow-[0_24px_70px_rgba(15,75,54,0.12)] sm:p-6">
+      <div className="rounded-[1.5rem] border bg-background p-5 sm:p-6">
+        <div className="flex items-center gap-3">
+          <span className="flex size-11 items-center justify-center rounded-2xl bg-primary text-primary-foreground">
+            <Refrigerator aria-hidden={true} className="size-5" />
+          </span>
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-primary">
+              Tủ lạnh số cá nhân
+            </p>
+            <h2 className="font-heading text-lg font-semibold">
+              Mở sau khi đăng nhập
+            </h2>
+          </div>
+        </div>
+
+        <p className="mt-5 text-sm leading-6 text-muted-foreground">
+          Dashboard cá nhân sẽ hiển thị danh sách thực phẩm, hạn dùng và gợi ý
+          ưu tiên sau khi bạn đăng nhập hoặc dùng tài khoản khách.
+        </p>
+
+        <div className="mt-5 grid gap-3 text-sm sm:grid-cols-3">
+          {["Thực phẩm của bạn", "Hạn dùng", "Món nên dùng trước"].map((item) => (
+            <div
+              className="rounded-2xl border bg-card px-3 py-3 text-center font-medium text-muted-foreground"
+              key={item}
+            >
+              {item}
+            </div>
+          ))}
+        </div>
+
+        <Button asChild className="mt-6 h-11 w-full rounded-2xl">
+          <a href="#digital-fridge">
+            Xem cách bắt đầu
+            <ArrowRight aria-hidden={true} className="size-4" />
+          </a>
+        </Button>
+      </div>
     </div>
   );
 }

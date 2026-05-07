@@ -25,7 +25,7 @@ export function FoodInventoryPanel() {
         </div>
       ) : null}
 
-      <div className="divide-y divide-[#edf1e8]">
+      <div className="max-h-[500px] overflow-y-auto pr-2 divide-y divide-[#edf1e8] custom-scrollbar">
         {foods.map((food) => (
           <div
             className="flex flex-col gap-3 py-5 sm:flex-row sm:items-center sm:justify-between"

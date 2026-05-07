@@ -12,7 +12,7 @@ import {
 
 // ─── Router ───────────────────────────────────────────────────────────────────
 
-const router = express.Router() as any;
+const router: Router = express.Router();
 
 /**
  * GET /products

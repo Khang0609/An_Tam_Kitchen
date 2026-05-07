@@ -33,3 +33,13 @@ export interface IInventoryRepository extends IBaseRepository<InventoryItem, Omi
 export interface IUserRepository extends IBaseRepository<User, Omit<User, 'id' | 'createdAt' | 'updatedAt'>, Partial<User>> {
   findByEmail(email: string): Promise<User | null>;
 }
+
+/**
+ * User Product Repository Interface
+ */
+export interface IUserProductRepository {
+  create(data: any): Promise<any>;
+  findAllByUserId(userId: string): Promise<any[]>;
+  findById(id: string): Promise<any | null>;
+  delete(id: string): Promise<boolean>;
+}

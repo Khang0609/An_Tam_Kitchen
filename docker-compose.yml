@@ -21,6 +21,7 @@ services:
     build:
       context: .
       dockerfile: ./apps/api/Dockerfile
+      target: builder
     container_name: antam_api
     ports:
       - "3001:3001"
@@ -28,21 +29,70 @@ services:
       - DATABASE_URL=${DATABASE_URL:-postgresql://user:password@db:5432/antam_kitchen?schema=public}
       - DIRECT_URL=${DIRECT_URL:-postgresql://user:password@db:5432/antam_kitchen?schema=public}
       - PORT=3001
+      - NODE_ENV=development
     depends_on:
       db:
         condition: service_healthy
+    command: pnpm --filter api dev
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - /app/apps/api/node_modules
+      - /app/packages/database/node_modules
+      - /app/packages/repositories/node_modules
+      - /app/packages/types/node_modules
+    develop:
+      watch:
+        - path: ./apps/api
+          action: sync
+          target: /app/apps/api
+          ignore:
+            - node_modules
+        - path: ./packages
+          action: sync
+          target: /app/packages
+          ignore:
+            - node_modules
+        - path: ./pnpm-lock.yaml
+          action: rebuild
 
   web:
     build:
       context: .
       dockerfile: ./apps/web/Dockerfile
+      target: builder
     container_name: antam_web
     ports:
       - "3000:3000"
     environment:
       - NEXT_PUBLIC_API_URL=http://localhost:3001
+      - NODE_ENV=development
     depends_on:
       api:
         condition: service_started
+    command: pnpm --filter web dev
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - /app/apps/web/node_modules
+      - /app/apps/web/.next
+      - /app/packages/database/node_modules
+      - /app/packages/repositories/node_modules
+      - /app/packages/types/node_modules
+    develop:
+      watch:
+        - path: ./apps/web
+          action: sync
+          target: /app/apps/web
+          ignore:
+            - node_modules
+            - .next
+        - path: ./packages
+          action: sync
+          target: /app/packages
+          ignore:
+            - node_modules
+        - path: ./pnpm-lock.yaml
+          action: rebuild
 
 

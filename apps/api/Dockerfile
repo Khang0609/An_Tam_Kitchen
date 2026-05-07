@@ -31,7 +31,7 @@ RUN adduser --system --uid 1001 expressjs
 # Copy pruned json and lockfile to install prod deps
 COPY --from=pruner /app/out/json/ .
 COPY --from=pruner /app/out/pnpm-lock.yaml ./pnpm-lock.yaml
-RUN pnpm install --prod --frozen-lockfile
+RUN pnpm install --frozen-lockfile
 
 # Generate Prisma Client again in the runner stage
 COPY --from=builder /app/packages/database/prisma ./packages/database/prisma

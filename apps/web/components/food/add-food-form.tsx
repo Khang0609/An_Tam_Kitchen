@@ -2,7 +2,7 @@
 
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
 import { format, subDays } from "date-fns";
-import { AlertCircle, ArrowLeft, LoaderCircle, Sparkles } from "lucide-react";
+import { AlertCircle, ArrowLeft, LoaderCircle, Lock, Sparkles } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Controller, useForm } from "react-hook-form";
@@ -19,26 +19,18 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { getAuthErrorMessage, isAuthError } from "@/lib/api/client";
 import { createFood } from "@/lib/api/foods";
 import type { AddFoodCategory, AddFoodStorageLocation } from "@/lib/api/types";
+import { clearAuthHint, getAuthRequiredHref } from "@/lib/auth-session";
 
-const categoryOptions: Array<{ value: AddFoodCategory; label: string }> = [
-  { value: "milk", label: "Sữa" },
-  { value: "sauce", label: "Nước sốt / gia vị" },
-  { value: "canned_food", label: "Đồ hộp" },
-  { value: "sausage", label: "Xúc xích / đồ chế biến" },
-  { value: "drink", label: "Đồ uống" },
-  { value: "other", label: "Khác" },
-];
+import { createUserProduct } from "@/lib/api/user-products";
+import {
+  CATEGORY_OPTIONS,
+  STORAGE_LOCATION_OPTIONS,
+} from "@repo/types";
 
-const storageLocationOptions: Array<{
-  value: AddFoodStorageLocation;
-  label: string;
-}> = [
-  { value: "fridge", label: "Ngăn mát" },
-  { value: "freezer", label: "Ngăn đông" },
-  { value: "room", label: "Nhiệt độ phòng" },
-];
+// Các options đã được chuyển ra @repo/types
 
 const addFoodFormSchema = z.object({
   name: z.string().trim().min(1, "Tên sản phẩm không được để trống."),
@@ -97,17 +89,34 @@ export function AddFoodForm() {
     }
 
     try {
-      await createFood({
-        name: values.name,
-        category,
-        openedAt: values.openedAt,
-        expiryDate: values.expiryDate || undefined,
-        storageLocation,
-        notes: values.notes || undefined,
-      });
+      await Promise.all([
+        createFood({
+          name: values.name,
+          category,
+          openedAt: values.openedAt,
+          expiryDate: values.expiryDate || undefined,
+          storageLocation,
+          notes: values.notes || undefined,
+        }),
+        createUserProduct({
+          name: values.name,
+          category,
+          storageLocation,
+          note: values.notes || undefined,
+        }),
+      ]);
       router.push("/#digital-fridge");
       router.refresh();
-    } catch {
+    } catch (error) {
+      if (isAuthError(error)) {
+        clearAuthHint();
+        setError("root", {
+          type: "auth",
+          message: getAuthErrorMessage(error),
+        });
+        return;
+      }
+
       setError("root", {
         message:
           "Chưa thể lưu món này. Bạn thử lại sau ít phút hoặc kiểm tra kết nối nhé.",
@@ -126,6 +135,9 @@ export function AddFoodForm() {
     });
   }
 
+  const isAuthRootError = errors.root?.type === "auth";
+  const loginHref = getAuthRequiredHref("/foods/new");
+
   return (
     <form
       className="rounded-3xl border bg-background p-5 shadow-sm sm:p-6"
@@ -137,6 +149,16 @@ export function AddFoodForm() {
           <AlertTitle>Chưa lưu được thực phẩm</AlertTitle>
           <AlertDescription className="text-amber-900">
             {errors.root.message}
+            {isAuthRootError ? (
+              <div className="mt-3">
+                <Button asChild className="rounded-2xl" size="sm">
+                  <Link href={loginHref}>
+                    <Lock aria-hidden={true} className="size-4" />
+                    Đăng nhập
+                  </Link>
+                </Button>
+              </div>
+            ) : null}
           </AlertDescription>
         </Alert>
       ) : null}
@@ -182,7 +204,7 @@ export function AddFoodForm() {
                     <SelectValue placeholder="Chọn nhóm" />
                   </SelectTrigger>
                   <SelectContent>
-                    {categoryOptions.map((option) => (
+                    {CATEGORY_OPTIONS.map((option) => (
                       <SelectItem key={option.value} value={option.value}>
                         {option.label}
                       </SelectItem>
@@ -216,7 +238,7 @@ export function AddFoodForm() {
                     <SelectValue placeholder="Chọn vị trí" />
                   </SelectTrigger>
                   <SelectContent>
-                    {storageLocationOptions.map((option) => (
+                    {STORAGE_LOCATION_OPTIONS.map((option) => (
                       <SelectItem key={option.value} value={option.value}>
                         {option.label}
                       </SelectItem>
@@ -335,7 +357,7 @@ function parseDateInput(value: string) {
 }
 
 function toAddFoodCategory(value: string): AddFoodCategory | null {
-  return categoryOptions.some((option) => option.value === value)
+  return CATEGORY_OPTIONS.some((option) => option.value === value)
     ? (value as AddFoodCategory)
     : null;
 }
@@ -343,7 +365,7 @@ function toAddFoodCategory(value: string): AddFoodCategory | null {
 function toAddFoodStorageLocation(
   value: string
 ): AddFoodStorageLocation | null {
-  return storageLocationOptions.some((option) => option.value === value)
+  return STORAGE_LOCATION_OPTIONS.some((option) => option.value === value)
     ? (value as AddFoodStorageLocation)
     : null;
 }

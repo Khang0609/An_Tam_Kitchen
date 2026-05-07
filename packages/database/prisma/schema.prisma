@@ -14,10 +14,13 @@ model User {
   name           String?
   password       String
   refreshToken   String?
+  resetToken     String?   @unique
+  resetTokenExpiry DateTime?
   createdAt      DateTime        @default(now())
   updatedAt      DateTime        @updatedAt
   posts          Post[]
   inventoryItems InventoryItem[]
+  userProducts   UserProduct[]
 }
 
 model Post {
@@ -58,15 +61,14 @@ model Product {
   isGlobal       Boolean         @default(false)
   daysBeforeOpen Int
   daysAfterOpen  Int
-  inventoryItems InventoryItem[]
 }
 
 model InventoryItem {
   id            String             @id @default(uuid(7))
   userId        String
   user          User               @relation(fields: [userId], references: [id])
-  productId     String
-  product       Product            @relation(fields: [productId], references: [id])
+  userProductId String
+  userProduct   UserProduct        @relation(fields: [userProductId], references: [id])
   displayName   String
   openedAt      DateTime?
   expiryDate    DateTime
@@ -87,4 +89,22 @@ model FoodNotification {
   message         String
   isRead          Boolean          @default(false)
   createdAt       DateTime         @default(now())
+}
+
+model UserProduct {
+  id              String          @id @default(uuid(7))
+  userId          String
+  user            User            @relation(fields: [userId], references: [id])
+  name            String
+  company         String          @default("Unknown")
+  barcode         String?
+  category        String
+  imageUrl        String?
+  storageLocation String          @map("storage_location")
+  daysBeforeOpen  Int             @default(30)
+  daysAfterOpen   Int             @default(7)
+  note            String?
+  inventoryItems  InventoryItem[]
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
 }

@@ -5,3 +5,4 @@ export * from './mock.js'; // Giữ lại Mock để dùng trong unit tests
 export * from './product.repository.js';
 export * from './inventory.repository.js';
 export * from './user.repository.js';
+export * from './user-product.repository.js';

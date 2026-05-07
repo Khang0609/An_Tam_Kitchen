@@ -15,7 +15,8 @@ import {
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import type { ComponentType, ReactNode } from "react";
-import { motion, useReducedMotion } from "motion/react";
+import { motion } from "motion/react";
+import { useReducedMotion } from "@/hooks/use-reduced-motion";
 import type { FoodStatus } from "@repo/types";
 import {
   EmptyState,
@@ -25,14 +26,17 @@ import {
 } from "@/components/foundation";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
+import { getAuthErrorMessage, isAuthError } from "@/lib/api/client";
 import { getFoodById } from "@/lib/api/foods";
 import type { FoodItemViewModel } from "@/lib/api/types";
+import { clearAuthHint, getAuthRequiredHref } from "@/lib/auth-session";
 import { cn } from "@/lib/utils";
 
 type FoodDetailViewState = {
   food: FoodItemViewModel | null;
   isLoading: boolean;
   error: string | null;
+  isAuthRequired: boolean;
 };
 
 type DetailLineProps = {
@@ -61,13 +65,19 @@ export function FoodDetailView({ foodId }: { foodId: string }) {
     food: null,
     isLoading: true,
     error: null,
+    isAuthRequired: false,
   });
 
   useEffect(() => {
     const controller = new AbortController();
 
     async function loadFood() {
-      setState((current) => ({ ...current, isLoading: true, error: null }));
+      setState((current) => ({
+        ...current,
+        isLoading: true,
+        error: null,
+        isAuthRequired: false,
+      }));
 
       try {
         const result = await getFoodById(foodId, {
@@ -78,17 +88,25 @@ export function FoodDetailView({ foodId }: { foodId: string }) {
           food: result.item,
           isLoading: false,
           error: result.error?.message ?? null,
+          isAuthRequired: false,
         });
       } catch (error) {
         if (controller.signal.aborted) return;
 
+        const isAuthRequired = isAuthError(error);
+        if (isAuthRequired) {
+          clearAuthHint();
+        }
+
         setState({
           food: null,
           isLoading: false,
-          error:
-            error instanceof Error
+          error: isAuthRequired
+            ? getAuthErrorMessage(error)
+            : error instanceof Error
               ? error.message
               : "Chưa tải được chi tiết thực phẩm.",
+          isAuthRequired,
         });
       }
     }
@@ -110,6 +128,20 @@ export function FoodDetailView({ foodId }: { foodId: string }) {
   }
 
   if (!state.food) {
+    if (state.isAuthRequired) {
+      return (
+        <DetailShell>
+          <AuthRequiredDetail
+            message={
+              state.error ?? "Bạn cần đăng nhập để xem chi tiết thực phẩm này."
+            }
+            targetPath={`/foods/${foodId}`}
+          />
+          <BackToDashboard className="mt-4" />
+        </DetailShell>
+      );
+    }
+
     return (
       <DetailShell>
         <EmptyState
@@ -188,7 +220,9 @@ export function FoodDetailView({ foodId }: { foodId: string }) {
             <DetailLine
               icon={Clock3}
               label="Số ngày đã mở"
-              value={openedDays === null ? "Chưa ghi nhận" : `${openedDays} ngày`}
+              value={
+                openedDays === null ? "Chưa ghi nhận" : `${openedDays} ngày`
+              }
             />
             <DetailLine
               icon={MapPin}
@@ -233,7 +267,7 @@ export function FoodDetailView({ foodId }: { foodId: string }) {
               "mt-4 rounded-2xl border p-4 text-sm leading-6",
               food.status === "not_recommended"
                 ? "border-rose-200 bg-rose-50 text-rose-950"
-                : "border-amber-200 bg-amber-50 text-amber-950"
+                : "border-amber-200 bg-amber-50 text-amber-950",
             )}
           >
             <p className="font-semibold">Khuyến nghị theo trạng thái</p>
@@ -263,6 +297,29 @@ function DetailShell({ children }: { children: ReactNode }) {
   );
 }
 
+function AuthRequiredDetail({
+  message,
+  targetPath,
+}: {
+  message: string;
+  targetPath: string;
+}) {
+  return (
+    <Alert className="border-amber-200 bg-amber-50 text-amber-950">
+      <AlertCircle aria-hidden={true} className="size-4" />
+      <AlertTitle>Cần đăng nhập</AlertTitle>
+      <AlertDescription className="text-amber-900">
+        {message}
+        <div className="mt-3">
+          <Button asChild className="rounded-2xl" size="sm">
+            <Link href={getAuthRequiredHref(targetPath)}>Đăng nhập</Link>
+          </Button>
+        </div>
+      </AlertDescription>
+    </Alert>
+  );
+}
+
 function DetailLine({ icon: Icon, label, value, muted }: DetailLineProps) {
   return (
     <div className="flex min-h-20 items-start gap-3 rounded-2xl border bg-background p-4">
@@ -275,8 +332,8 @@ function DetailLine({ icon: Icon, label, value, muted }: DetailLineProps) {
         </span>
         <span
           className={cn(
-            "mt-2 block break-words text-base font-semibold leading-6",
-            muted ? "text-muted-foreground" : "text-foreground"
+            "mt-2 block wrap-break-words text-base font-semibold leading-6",
+            muted ? "text-muted-foreground" : "text-foreground",
           )}
         >
           {value}
@@ -290,7 +347,10 @@ function BackToDashboard({ className }: { className?: string }) {
   return (
     <Button
       asChild
-      className={cn("h-11 w-full justify-center rounded-2xl sm:w-fit", className)}
+      className={cn(
+        "h-11 w-full justify-center rounded-2xl sm:w-fit",
+        className,
+      )}
       variant="outline"
     >
       <Link href="/#digital-fridge">
