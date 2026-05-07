@@ -1,5 +1,5 @@
 "use client";
-
+import { AppHeaderAuthActions } from "@/components/foundation/app-header-auth-actions";
 import Link from "next/link";
 import { Leaf, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -71,6 +71,7 @@ export function AppHeader({ className }: AppHeaderProps) {
         </nav>
 
         <div className="flex items-center gap-2">
+          <AppHeaderAuthActions />
           {hasAuth ? (
             <Button
               className="gap-2"

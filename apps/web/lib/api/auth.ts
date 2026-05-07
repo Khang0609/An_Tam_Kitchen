@@ -5,6 +5,12 @@
 // Lấy base URL từ môi trường hoặc mặc định localhost
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
 
+export type AuthApiUser = {
+  id?: string;
+  name?: string;
+  email?: string;
+};
+
 export async function signup(name: string, email: string, password: string) {
   const res = await fetch(`${API_URL}/api/auth/signup`, {
     method: "POST",
@@ -41,6 +47,58 @@ export async function login(email: string, password: string) {
 export async function logout() {
   const res = await fetch(`${API_URL}/api/auth/logout`, {
     method: "POST",
+    credentials: "include",
   });
   return res.ok;
+}
+
+export function getUserFromAuthResponse(payload: unknown): AuthApiUser | null {
+  const candidate = readUserCandidate(payload);
+  if (!candidate) return null;
+
+  const user: AuthApiUser = {};
+
+  if (typeof candidate.id === "string" && candidate.id.trim()) {
+    user.id = candidate.id.trim();
+  }
+
+  if (typeof candidate.name === "string" && candidate.name.trim()) {
+    user.name = candidate.name.trim();
+  }
+
+  if (typeof candidate.email === "string" && candidate.email.trim()) {
+    user.email = candidate.email.trim();
+  }
+
+  return Object.keys(user).length > 0 ? user : null;
+}
+
+function readUserCandidate(payload: unknown): Record<string, unknown> | null {
+  if (!payload || typeof payload !== "object") return null;
+
+  const record = payload as Record<string, unknown>;
+
+  if (isRecord(record.user)) {
+    return record.user;
+  }
+
+  if (isRecord(record.data)) {
+    if (isRecord(record.data.user)) {
+      return record.data.user;
+    }
+
+    if ("email" in record.data || "name" in record.data || "id" in record.data) {
+      return record.data;
+    }
+  }
+
+  if ("email" in record || "name" in record || "id" in record) {
+    return record;
+  }
+
+  return null;
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return Boolean(value) && typeof value === "object";
 }

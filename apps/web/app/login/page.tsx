@@ -24,7 +24,7 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { login } from "@/lib/api/auth";
+import { getUserFromAuthResponse, login } from "@/lib/api/auth";
 import { getSafeNextPath, setAuthHint } from "@/lib/auth-session";
 
 const GUEST_EMAIL = "guest@antam.local";
@@ -77,8 +77,13 @@ export default function LoginPage() {
     }
 
     try {
-      await login(loginEmail, loginPassword);
-      setAuthHint();
+      const loginPayload = await login(loginEmail, loginPassword);
+      setAuthHint(
+        getUserFromAuthResponse(loginPayload) ??
+          (isGuest
+            ? { email: loginEmail, name: "Tài khoản khách" }
+            : { email: loginEmail })
+      );
       setMessage("Đăng nhập thành công! Đang chuyển tiếp...");
       setTimeout(() => {
         router.push(safeNext ?? "/");

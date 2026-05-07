@@ -23,7 +23,8 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { signup } from "@/lib/api/auth";
+import { getUserFromAuthResponse, signup } from "@/lib/api/auth";
+import { setAuthHint } from "@/lib/auth-session";
 
 export default function SignupPage() {
   const router = useRouter();
@@ -41,7 +42,18 @@ export default function SignupPage() {
     setIsLoading(true);
 
     try {
-      await signup(name, email, password);
+      const signupPayload = await signup(name, email, password);
+      const signedUpUser = getUserFromAuthResponse(signupPayload);
+
+      if (signedUpUser) {
+        setAuthHint({ name, email, ...signedUpUser });
+        setMessage("Đăng ký thành công! Đang chuyển về trang chủ...");
+        setTimeout(() => {
+          router.push("/");
+        }, 1500);
+        return;
+      }
+
       setMessage("Đăng ký thành công! Đang chuyển đến trang đăng nhập...");
       setTimeout(() => {
         router.push("/login");
