@@ -1,10 +1,10 @@
 "use client";
-import { AppHeaderAuthActions } from "@/components/foundation/app-header-auth-actions";
+
 import Link from "next/link";
-import { Leaf, LogOut } from "lucide-react";
+import { Leaf, LogOut, UserRound } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { useAuthHint, clearAuthHint } from "@/lib/auth-session";
+import { useAuthHint, clearAuthHint, useAuthUserHint } from "@/lib/auth-session";
 import { logout as apiLogout } from "@/lib/api/auth";
 import { useRouter } from "next/navigation";
 
@@ -20,6 +20,7 @@ const navItems = [
 
 export function AppHeader({ className }: AppHeaderProps) {
   const hasAuth = useAuthHint();
+  const userHint = useAuthUserHint();
   const router = useRouter();
 
   const handleLogout = async () => {
@@ -33,6 +34,8 @@ export function AppHeader({ className }: AppHeaderProps) {
       router.refresh();
     }
   };
+
+  const displayName = userHint?.name ?? userHint?.email ?? "Người dùng";
 
   return (
     <header
@@ -71,17 +74,24 @@ export function AppHeader({ className }: AppHeaderProps) {
         </nav>
 
         <div className="flex items-center gap-2">
-          <AppHeaderAuthActions />
           {hasAuth ? (
-            <Button
-              className="gap-2"
-              onClick={handleLogout}
-              size="sm"
-              variant="outline"
-            >
-              <LogOut className="size-4" />
-              <span>Đăng xuất</span>
-            </Button>
+            <>
+              <span className="inline-flex h-9 max-w-48 items-center gap-2 rounded-lg border bg-background px-3 text-sm text-foreground">
+                <UserRound aria-hidden={true} className="size-4 shrink-0 text-primary" />
+                <span className="hidden text-muted-foreground sm:inline">Xin chào,</span>
+                <span className="truncate font-medium">{displayName}</span>
+              </span>
+              <Button
+                aria-label="Đăng xuất"
+                onClick={handleLogout}
+                size="icon-sm"
+                title="Đăng xuất"
+                type="button"
+                variant="outline"
+              >
+                <LogOut aria-hidden={true} className="size-4" />
+              </Button>
+            </>
           ) : (
             <>
               <Button asChild size="sm" variant="outline">
