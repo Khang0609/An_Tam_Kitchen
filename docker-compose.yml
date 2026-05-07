@@ -41,6 +41,20 @@ services:
       - /app/packages/database/node_modules
       - /app/packages/repositories/node_modules
       - /app/packages/types/node_modules
+    develop:
+      watch:
+        - path: ./apps/api
+          action: sync
+          target: /app/apps/api
+          ignore:
+            - node_modules
+        - path: ./packages
+          action: sync
+          target: /app/packages
+          ignore:
+            - node_modules
+        - path: ./pnpm-lock.yaml
+          action: rebuild
 
   web:
     build:
@@ -65,5 +79,20 @@ services:
       - /app/packages/database/node_modules
       - /app/packages/repositories/node_modules
       - /app/packages/types/node_modules
+    develop:
+      watch:
+        - path: ./apps/web
+          action: sync
+          target: /app/apps/web
+          ignore:
+            - node_modules
+            - .next
+        - path: ./packages
+          action: sync
+          target: /app/packages
+          ignore:
+            - node_modules
+        - path: ./pnpm-lock.yaml
+          action: rebuild
 
 

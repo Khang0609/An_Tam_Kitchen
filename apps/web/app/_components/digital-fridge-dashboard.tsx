@@ -215,10 +215,10 @@ export function DigitalFridgeDashboard() {
                 onValueChange={(value: string) => setFilter(value as FilterValue)}
                 value={filter}
               >
-                <TabsList className="h-auto w-full flex-wrap justify-start gap-1 rounded-2xl p-1 sm:w-auto">
+                <TabsList className="h-auto w-full flex-wrap justify-start gap-2 rounded-full p-2 sm:w-auto">
                   {filterOptions.map((option) => (
                     <TabsTrigger
-                      className="min-h-10 flex-none rounded-xl px-3"
+                      className="min-h-11 flex-none rounded-full px-5 text-sm font-medium"
                       key={option.value}
                       value={option.value}
                     >

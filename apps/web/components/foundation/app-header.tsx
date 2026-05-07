@@ -1,7 +1,12 @@
+"use client";
+
 import Link from "next/link";
-import { Leaf } from "lucide-react";
+import { Leaf, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { useAuthHint, clearAuthHint } from "@/lib/auth-session";
+import { logout as apiLogout } from "@/lib/api/auth";
+import { useRouter } from "next/navigation";
 
 type AppHeaderProps = {
   className?: string;
@@ -14,10 +19,25 @@ const navItems = [
 ];
 
 export function AppHeader({ className }: AppHeaderProps) {
+  const hasAuth = useAuthHint();
+  const router = useRouter();
+
+  const handleLogout = async () => {
+    try {
+      await apiLogout();
+    } catch (error) {
+      console.error("Logout error:", error);
+    } finally {
+      clearAuthHint();
+      router.push("/");
+      router.refresh();
+    }
+  };
+
   return (
     <header
       className={cn(
-        "sticky top-0 z-40 border-b bg-background/90 backdrop-blur supports-[backdrop-filter]:bg-background/75",
+        "sticky top-0 z-40 border-b bg-background/90 backdrop-blur supports-backdrop-filter:bg-background/75",
         className
       )}
     >
@@ -51,12 +71,26 @@ export function AppHeader({ className }: AppHeaderProps) {
         </nav>
 
         <div className="flex items-center gap-2">
-          <Button asChild size="sm" variant="outline">
-            <Link href="/login">Đăng nhập</Link>
-          </Button>
-          <Button asChild size="sm">
-            <Link href="/signup">Đăng ký</Link>
-          </Button>
+          {hasAuth ? (
+            <Button
+              className="gap-2"
+              onClick={handleLogout}
+              size="sm"
+              variant="outline"
+            >
+              <LogOut className="size-4" />
+              <span>Đăng xuất</span>
+            </Button>
+          ) : (
+            <>
+              <Button asChild size="sm" variant="outline">
+                <Link href="/login">Đăng nhập</Link>
+              </Button>
+              <Button asChild size="sm">
+                <Link href="/signup">Đăng ký</Link>
+              </Button>
+            </>
+          )}
         </div>
       </div>
     </header>

@@ -24,27 +24,8 @@ import { createFood } from "@/lib/api/foods";
 import type { AddFoodCategory, AddFoodStorageLocation } from "@/lib/api/types";
 import { clearAuthHint, getAuthRequiredHref } from "@/lib/auth-session";
 
-const categoryOptions: Array<{ value: AddFoodCategory; label: string }> = [
-  { value: "milk", label: "Sữa" },
-  { value: "sauce", label: "Nước sốt / gia vị" },
-  { value: "canned_food", label: "Đồ hộp" },
-  { value: "sausage", label: "Xúc xích / đồ chế biến" },
-  { value: "drink", label: "Đồ uống" },
-  { value: "other", label: "Khác" },
-];
-
-const storageLocationOptions: Array<{
-  value: AddFoodStorageLocation;
-  label: string;
-}> = [
-  { value: "fridge", label: "Ngăn mát" },
-  { value: "freezer", label: "Ngăn đông" },
-  { value: "room", label: "Nhiệt độ phòng" },
-];
 import { createUserProduct } from "@/lib/api/user-products";
 import {
-  type AddFoodCategory,
-  type AddFoodStorageLocation,
   CATEGORY_OPTIONS,
   STORAGE_LOCATION_OPTIONS,
 } from "@repo/types";
