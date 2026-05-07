@@ -27,8 +27,8 @@ export const InventoryItemSchema = z.object({
   /** ID người dùng sở hữu bản ghi này */
   userId: z.string(),
 
-  /** Liên kết tới Product gốc (Foreign Key) */
-  productId: z.string(),
+  /** Liên kết tới UserProduct gốc (Foreign Key) */
+  userProductId: z.string(),
   
   /** 
    * Tên hiển thị (Snapshot)

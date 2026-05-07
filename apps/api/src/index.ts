@@ -1,15 +1,48 @@
-import express from 'express';
+import express, { Application } from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import cookieParser from 'cookie-parser';
+import authRoutes from '@/routes/auth.routes.js';
+import productRoutes from '@/routes/product.routes.js';
+import inventoryRoutes from '@/routes/inventory.routes.js';
+import userProductRoutes from '@/routes/user-product.routes.js';
 
 dotenv.config();
 
-const app = express();
+const app: Application = express();
 const port = process.env.PORT || 3001;
 
-app.use(cors());
-app.use(express.json());
+// ─── CORS ────────────────────────────────────────────────────────────────────
+const allowedOrigins = [
+  'http://localhost:3000',                       // Next.js dev
+  process.env.FRONTEND_URL,                      // Vercel production URL
+].filter(Boolean) as string[];
 
+app.use(cors({
+  origin: (origin, callback) => {
+    // Allow requests with no origin (mobile apps, curl, server-to-server)
+    if (!origin) {
+      return callback(null, true);
+    }
+
+    const isAllowed = allowedOrigins.includes(origin);
+    const isVercelPreview = origin.endsWith('.vercel.app');
+
+    if (isAllowed || isVercelPreview) {
+      callback(null, true);
+    } else {
+      callback(new Error(`Origin ${origin} not allowed by CORS`));
+    }
+  },
+  credentials: true,  // Required for HttpOnly cookie auth
+}));
+app.use(express.json());
+app.use(cookieParser());
+
+app.use('/api/auth', authRoutes);
+app.use('/api/products', productRoutes);
+app.use('/api/inventory', inventoryRoutes);
+app.use('/api/user-products', userProductRoutes);
 app.get('/', (req, res) => {
   res.json({ message: 'Welcome to An Tâm Kitchen API' });
 });
@@ -18,6 +51,17 @@ app.get('/health', (req, res) => {
   res.json({ status: 'OK' });
 });
 
-app.listen(port, () => {
-  console.log(`Server is running on http://localhost:${port}`);
-});
+console.log('--- API STARTUP DEBUG ---');
+console.log('NODE_ENV:', process.env.NODE_ENV);
+console.log('PORT ENV:', process.env.PORT);
+console.log('VERCEL ENV:', process.env.VERCEL);
+
+if (process.env.NODE_ENV !== 'test') {
+  app.listen(Number(port), '0.0.0.0', () => {
+    console.log(`🚀 API Server is strictly listening on 0.0.0.0:${port}`);
+  });
+}
+
+
+
+export default app;

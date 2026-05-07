@@ -1,27 +1,110 @@
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
+datasource db {
+  provider = "postgresql"
+}
 generator client {
   provider = "prisma-client-js"
 }
 
-datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
-}
-
 model User {
-  id    Int     @id @default(autoincrement())
-  email String  @unique
-  name  String?
-  posts Post[]
+  id             String          @id @default(uuid(7))
+  email          String          @unique
+  name           String?
+  password       String
+  refreshToken   String?
+  resetToken     String?   @unique
+  resetTokenExpiry DateTime?
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  posts          Post[]
+  inventoryItems InventoryItem[]
+  userProducts   UserProduct[]
 }
 
 model Post {
-  id        Int     @id @default(autoincrement())
+  id        String  @id @default(uuid(7))
   title     String
   content   String?
   published Boolean @default(false)
   author    User    @relation(fields: [authorId], references: [id])
-  authorId  Int
+  authorId  String
+}
+
+enum StorageLocation {
+  fridge
+  freezer
+  room_temp
+}
+
+enum FoodStatus {
+  fresh
+  use_soon
+  check_before_use
+  not_recommended
+}
+
+enum NotificationType {
+  expiry_warning
+  open_limit_warning
+}
+
+model Product {
+  id             String          @id @default(uuid(7))
+  name           String
+  company        String
+  barcode        String?
+  category       String          @default("others")
+  imageUrl       String?
+  ownerId        String?
+  isGlobal       Boolean         @default(false)
+  daysBeforeOpen Int
+  daysAfterOpen  Int
+}
+
+model InventoryItem {
+  id            String             @id @default(uuid(7))
+  userId        String
+  user          User               @relation(fields: [userId], references: [id])
+  userProductId String
+  userProduct   UserProduct        @relation(fields: [userProductId], references: [id])
+  displayName   String
+  openedAt      DateTime?
+  expiryDate    DateTime
+  location      StorageLocation    @default(fridge)
+  status        FoodStatus         @default(fresh)
+  notes         String?
+  quantity      String?
+  createdAt     DateTime           @default(now())
+  updatedAt     DateTime           @updatedAt
+  notifications FoodNotification[]
+}
+
+model FoodNotification {
+  id              String           @id @default(uuid(7))
+  inventoryItemId String
+  inventoryItem   InventoryItem    @relation(fields: [inventoryItemId], references: [id])
+  type            NotificationType
+  message         String
+  isRead          Boolean          @default(false)
+  createdAt       DateTime         @default(now())
+}
+
+model UserProduct {
+  id              String          @id @default(uuid(7))
+  userId          String
+  user            User            @relation(fields: [userId], references: [id])
+  name            String
+  company         String          @default("Unknown")
+  barcode         String?
+  category        String
+  imageUrl        String?
+  storageLocation String          @map("storage_location")
+  daysBeforeOpen  Int             @default(30)
+  daysAfterOpen   Int             @default(7)
+  note            String?
+  inventoryItems  InventoryItem[]
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
 }

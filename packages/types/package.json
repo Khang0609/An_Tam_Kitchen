@@ -2,12 +2,16 @@
   "name": "@repo/types",
   "version": "1.0.0",
   "private": true,
-  "main": "./index.ts",
-  "types": "./index.ts",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "tsc"
+  },
   "dependencies": {
     "zod": "^4.3.6"
   },
   "devDependencies": {
+    "@repo/typescript-config": "workspace:*",
     "typescript": "^6.0.3"
   }
 }
