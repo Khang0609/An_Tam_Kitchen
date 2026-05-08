@@ -23,7 +23,7 @@ describe('InventoryRepository (Mock Implementation)', () => {
     it('nên tạo mới một vật phẩm trong kho và lưu vào mock database', async () => {
       const inputData: Omit<InventoryItem, 'id' | 'createdAt' | 'updatedAt'> = {
         userId: 'user-789',
-        productId: 'prod-456',
+        userProductId: 'prod-456',
         displayName: 'Sữa tươi TH True Milk',
         openedAt: null,
         expiryDate: new Date('2026-12-31'),
@@ -48,7 +48,7 @@ describe('InventoryRepository (Mock Implementation)', () => {
     it('nên cập nhật trạng thái (status) của vật phẩm chính xác', async () => {
       const created = await inventoryRepo.create({
         userId: 'u1',
-        productId: 'p1',
+        userProductId: 'p1',
         displayName: 'Test',
         openedAt: null,
         expiryDate: new Date(),
@@ -81,7 +81,7 @@ describe('InventoryRepository (Mock Implementation)', () => {
     it('nên xóa thành công vật phẩm tồn tại', async () => {
       const created = await inventoryRepo.create({
         userId: 'u1',
-        productId: 'p1',
+        userProductId: 'p1',
         displayName: 'To be deleted',
         openedAt: null,
         expiryDate: new Date(),
@@ -100,9 +100,9 @@ describe('InventoryRepository (Mock Implementation)', () => {
     });
 
     it('nên lọc đúng danh sách vật phẩm theo userId', async () => {
-      await inventoryRepo.create({ userId: 'user-1', productId: 'p1', displayName: 'A', openedAt: null, expiryDate: new Date(), location: 'fridge', status: 'fresh' });
-      await inventoryRepo.create({ userId: 'user-1', productId: 'p2', displayName: 'B', openedAt: null, expiryDate: new Date(), location: 'fridge', status: 'fresh' });
-      await inventoryRepo.create({ userId: 'user-2', productId: 'p3', displayName: 'C', openedAt: null, expiryDate: new Date(), location: 'fridge', status: 'fresh' });
+      await inventoryRepo.create({ userId: 'user-1', userProductId: 'p1', displayName: 'A', openedAt: null, expiryDate: new Date(), location: 'fridge', status: 'fresh' });
+      await inventoryRepo.create({ userId: 'user-1', userProductId: 'p2', displayName: 'B', openedAt: null, expiryDate: new Date(), location: 'fridge', status: 'fresh' });
+      await inventoryRepo.create({ userId: 'user-2', userProductId: 'p3', displayName: 'C', openedAt: null, expiryDate: new Date(), location: 'fridge', status: 'fresh' });
 
       const user1Items = await inventoryRepo.findAllByUserId('user-1');
       expect(user1Items).toHaveLength(2);

@@ -55,7 +55,7 @@ export class InventoryController {
 
       const newItem = await this.inventoryRepo.create({
         userId,
-        productId,
+        userProductId: productId,
         displayName: body.displayName || body.name || 'Sản phẩm mới',
         openedAt: body.openedAt,
         expiryDate,
