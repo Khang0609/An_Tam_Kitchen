@@ -96,7 +96,7 @@ export class MockInventoryRepository implements IInventoryRepository {
   }
 
   async findByProduct(productId: string): Promise<InventoryItem[]> {
-    return this.inventory.filter(item => item.productId === productId);
+    return this.inventory.filter(item => item.userProductId === productId);
   }
 }
 

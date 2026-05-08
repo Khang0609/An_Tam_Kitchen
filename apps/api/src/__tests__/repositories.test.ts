@@ -23,14 +23,14 @@ describe('Backend Repositories (Mock)', () => {
     // 2. Add to user inventory
     const item = await inventoryRepo.create({
       userId: 'user_1',
-      productId: privateProduct.id,
+      userProductId: privateProduct.id,
       displayName: privateProduct.name,
       expiryDate: new Date('2026-12-31'),
       location: 'fridge',
       status: 'fresh'
     });
 
-    expect(item.productId).toBe(privateProduct.id);
+    expect(item.userProductId).toBe(privateProduct.id);
     expect(item.displayName).toBe('User Homemade Jam');
 
     // 3. Find by user

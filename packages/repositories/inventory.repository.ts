@@ -12,7 +12,7 @@ export class PrismaInventoryRepository implements IInventoryRepository {
   async create(data: Omit<InventoryItem, 'id' | 'createdAt' | 'updatedAt'>): Promise<InventoryItem> {
     const item = await this.db.inventoryItem.create({
       data,
-      include: { product: true },
+      include: { userProduct: true },
     });
     return item as unknown as InventoryItem;
   }
@@ -20,14 +20,14 @@ export class PrismaInventoryRepository implements IInventoryRepository {
   async findById(id: string): Promise<InventoryItem | null> {
     const item = await this.db.inventoryItem.findUnique({
       where: { id },
-      include: { product: true },
+      include: { userProduct: true },
     });
     return item as unknown as InventoryItem | null;
   }
 
   async findAll(): Promise<InventoryItem[]> {
     const items = await this.db.inventoryItem.findMany({
-      include: { product: true },
+      include: { userProduct: true },
     });
     return items as unknown as InventoryItem[];
   }
@@ -36,7 +36,7 @@ export class PrismaInventoryRepository implements IInventoryRepository {
     const item = await this.db.inventoryItem.update({
       where: { id },
       data,
-      include: { product: true },
+      include: { userProduct: true },
     });
     return item as unknown as InventoryItem;
   }
@@ -49,7 +49,7 @@ export class PrismaInventoryRepository implements IInventoryRepository {
   async findAllByUserId(userId: string): Promise<InventoryItem[]> {
     const items = await this.db.inventoryItem.findMany({
       where: { userId },
-      include: { product: true },
+      include: { userProduct: true },
       orderBy: { updatedAt: 'desc' },
     });
     return items as unknown as InventoryItem[];
@@ -57,8 +57,8 @@ export class PrismaInventoryRepository implements IInventoryRepository {
 
   async findByProduct(productId: string): Promise<InventoryItem[]> {
     const items = await this.db.inventoryItem.findMany({
-      where: { productId },
-      include: { product: true },
+      where: { userProductId: productId },
+      include: { userProduct: true },
     });
     return items as unknown as InventoryItem[];
   }
