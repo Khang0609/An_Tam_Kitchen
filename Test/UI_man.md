@@ -25,7 +25,7 @@ Dưới đây là bảng checklist chung cho **mỗi màn hình** (trang).
 | # | Mục kiểm tra | Chi tiết cần quan sát | Pass/Fail | Ghi chú |
 |---|---|---|---|---|
 | **A. BỐ CỤC & ĐỒ HỌA** |||||
-| 1 | Cấu trúc trang | Header, footer, sidebar (nếu có) hiển thị đúng vị trí, không chồng lấn, không mất. | | |
+| 1 | Cấu trúc trang | Header, footer, sidebar (nếu có) hiển thị đúng vị trí, không chồng lấn, không mất. |Pass | |
 | 2 | Logo | Logo rõ nét, đúng tỉ lệ, liên kết về trang chủ. | | |
 | 3 | Hình ảnh minh họa | Không bị vỡ, méo, sai tỉ lệ. Có alt text phù hợp (chuột phải inspect kiểm tra). | | |
 | 4 | Icon | Icon hiển thị đúng, không mất, có thuộc tính `aria-label` hoặc text ẩn cho screen reader. | | |
