@@ -117,9 +117,28 @@ Tài liệu này liệt kê các vấn đề kỹ thuật tiềm ẩn và lộ t
     - Di chuyển toàn bộ phần hướng dẫn cài đặt, sử dụng và vận hành sang một file riêng (ví dụ: `GETTING_STARTED.md` hoặc `docs/`).
 - **Độ ưu tiên:** Trung bình.
 
+## 13. Issue: [DevOps-Versioning] Centralized Version Pinning (Root Lock)
+- **Hiện trạng:** Các package trong monorepo có thể đang sử dụng các phiên bản khác nhau của cùng một thư viện (ví dụ: package A dùng v4, package B dùng v5).
+- **Phân tích:** 
+    - Việc không nhất quán phiên bản dẫn đến lỗi "Dependency Hell", tăng kích thước bundle không cần thiết và gây ra các hành vi khó lường khi chạy integration tests.
+    - Cần một cơ chế để "khóa" hoặc ưu tiên một phiên bản duy nhất cho các thư viện cốt lõi ở cấp độ root.
+- **Giải pháp đề xuất:**
+    - Sử dụng tính năng **`pnpm.overrides`** hoặc **`resolutions`** trong `package.json` ở root để ép xung đột về một phiên bản ổn định nhất.
+    - Thiết lập file cấu hình share version (nếu cần) để các package cùng tham chiếu.
+- **Độ ưu tiên:** Khẩn cấp (Critical).
+
+## 14. Issue: [Backend-Upgrade] Backend Dependency Optimization & Audit
+- **Hiện trạng:** Các dependencies trong `apps/api` (backend) có thể chưa ở phiên bản tối ưu hoặc có các bản vá bảo mật/hiệu năng mới.
+- **Phân tích:** 
+    - Backend là lõi xử lý dữ liệu, cần sự ổn định và hiệu năng cao nhất.
+    - Cần kiểm tra lại các thư viện như `express`, `prisma`, `zod`, `argon2` để đảm bảo chúng đang chạy bản stable tốt nhất, tương thích với Node.js 22+.
+- **Giải pháp đề xuất:**
+    - Thực hiện audit dependency (`pnpm audit`).
+    - Nâng cấp các thư viện lên phiên bản stable mới nhất có hiệu năng tối ưu.
+    - Kiểm tra tính tương thích của các `@types` đi kèm để tránh lỗi compile TypeScript.
+- **Độ ưu tiên:** Khẩn cấp (Critical).
+
 ---
-
-
 
 *Người lập kế hoạch: Antigravity AI*
 *Người đọc và kiểm tra 1: Trần Nguyên Khang - Duyệt*
