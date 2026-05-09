@@ -177,11 +177,11 @@ III. PHÂN LOẠI THEO KHU VỰC
 
 IV. DANH SÁCH LỖI CHI TIẾT
 ---------------------------
-| ID | Màn hình  | Mô tả ngắn            | Severity | Priority | Môi trường                |
-|----|-----------|------------------------|----------|----------|---------------------------|
-| 1  | /scan     | Nút quét bị tràn...   | S2       | P1       | iPhone SE, Chrome iOS     |
-| 2  | /products | Thiếu focus outline... | S3       | P2       | Desktop Chrome            |
-| …  | …         | …                      | …        | …        | …                         |
+| ID | Màn hình  | Mô tả ngắn            | Severity | Priority | Môi trường                | Link Issue |
+|----|-----------|------------------------|----------|----------|---------------------------|------------|
+| 1  | /scan     | Nút quét bị tràn...   | S2       | P1       | iPhone SE, Chrome iOS     | [Link](#)  |
+| 2  | /products | Thiếu focus outline... | S3       | P2       | Desktop Chrome            | [Link](#)  |
+| …  | …         | …                      | …        | …        | …                         | …          |
 
 V. ĐÁNH GIÁ CHUNG
 ------------------
