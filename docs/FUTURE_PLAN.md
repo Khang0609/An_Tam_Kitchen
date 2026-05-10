@@ -44,25 +44,20 @@ Tài liệu này liệt kê các vấn đề kỹ thuật tiềm ẩn và lộ t
 - **Độ ưu tiên:** Cao.
 
 
-## 5. Issue: [Logic-Refactor] Implement Unified Expiry Calculation Logic
-- **Hiện trạng:** Logic tính toán ngày hết hạn cũ hiện chỉ dựa trên `openedDate`.
+## 5. Issue: [Architecture-Fix] Hybrid Global Catalog & Unified Expiry Engine
+- **Hiện trạng:** Hệ thống đang bị phân mảnh do cơ chế nhập liệu thủ công (Manual Entry), dẫn đến dữ liệu không nhất quán, sai lệch múi giờ (UTC/Local) và công thức tính hạn dùng bị lỗi.
 - **Phân tích:** 
-    - Công thức cũ không so sánh với hạn gốc của sản phẩm, dẫn đến việc `RemainingDays` có thể sai lệch nếu hạn gốc ngắn hơn hạn sau khi mở nắp.
+    - Thiếu sự tách biệt giữa "Kho sản phẩm mẫu" (Global Products) và "Tủ lạnh người dùng" (Inventory). 
+    - Việc lưu trữ DateTime không đồng bộ khiến logic tính toán `RemainingDays` bị sai lệch hoàn toàn trên các múi giờ khác nhau.
+    - Cần một cơ chế Search-First: Người dùng tìm sản phẩm chuẩn trong kho trước, nếu không có mới cho phép tạo mới (để tránh spam và trùng lặp).
 - **Giải pháp đề xuất:**
-    - Triển khai công thức: $RemainingDays = \min(ExpiryDate - Today, OpenDate + DaysAfterOpen - Today)$.
-    - Đảm bảo dữ liệu phản ánh chính xác thực tế bảo quản của từng loại thực phẩm.
-- **Độ ưu tiên:** Rất Cao.
-
-## 6. Issue: [Database-Fix] Align Schema DateTime Types & Data Access Layer
-- **Hiện trạng:** Các trường DateTime trong Prisma đang không đồng bộ hoặc bị lưu sai định dạng giữa Local và UTC.
-- **Phân tích:** 
-    - Sai lệch múi giờ dẫn đến việc tính toán logic ở các tầng trên bị sai lệch hoàn toàn (ví dụ: bị cộng dồn +7 hoặc về 00:00:00 sai ngày).
-- **Giải pháp đề xuất:**
-    - **Schema Audit:** Sử dụng nhất quán `Timestamptz` trong `schema.prisma`.
-    - **Prisma Client Extension:** Tự động chuẩn hóa dữ liệu Date về UTC trước khi ghi vào DB.
-    - **Data Migration:** Viết script clean lại các bản ghi cũ bị sai múi giờ.
-    - **Repository Layer:** Ép kiểu và chuẩn hóa đầu ra đồng nhất cho cả API và Worker.
+    - **Tái cấu trúc DB:** Chia làm 2 lớp rõ rệt: Global Catalog (chứa thông tin chuẩn như `daysAfterOpen`, `shelfLife`) và Inventory (lưu `openedDate`, `NSX/HSD` riêng của user).
+    - **Đồng bộ hóa thời gian:** Sử dụng nhất quán `Timestamptz` (UTC) ở tầng DB. Viết Prisma Client Extension để tự động chuẩn hóa dữ liệu Date trước khi ghi.
+    - **Logic tính hạn:** Triển khai công thức tập trung: $RemainingDays = \min(ExpiryDate - Today, OpenDate + ShelfLife - Today)$.
+    - **UI Flow:** Chỉ hiển thị nút "Tạo sản phẩm" khi kết quả tìm kiếm trong Kho sản phẩm mẫu trống.
 - **Độ ưu tiên:** Khẩn cấp (Critical).
+
+
 
 ## 7. Issue: [Feature-Data] Build Mock Product Seed & Search API
 - **Hiện trạng:** Chưa có kho dữ liệu sản phẩm mẫu (Global Products).
@@ -140,6 +135,5 @@ Tài liệu này liệt kê các vấn đề kỹ thuật tiềm ẩn và lộ t
 
 ---
 
-*Người lập kế hoạch: Antigravity AI*
-*Người đọc và kiểm tra 1: Trần Nguyên Khang - Duyệt*
 *Ngày tạo: 2026-05-09*
+*Ngày cập nhật: 2026-05-10*
