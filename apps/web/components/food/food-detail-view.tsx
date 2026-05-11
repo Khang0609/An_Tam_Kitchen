@@ -13,7 +13,7 @@ import {
   Tags,
 } from "lucide-react";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { Suspense } from "react";
 import type { ComponentType, ReactNode } from "react";
 import { motion } from "motion/react";
 import { useReducedMotion } from "@/hooks/use-reduced-motion";
@@ -26,18 +26,9 @@ import {
 } from "@/components/foundation";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import { getAuthErrorMessage, isAuthError } from "@/lib/api/client";
-import { getFoodById } from "@/lib/api/foods";
+import { useInventoryDetail } from "@/hooks/queries/use-inventory-detail";
 import type { FoodItemViewModel } from "@/lib/api/types";
-import { clearAuthHint, getAuthRequiredHref } from "@/lib/auth-session";
 import { cn } from "@/lib/utils";
-
-type FoodDetailViewState = {
-  food: FoodItemViewModel | null;
-  isLoading: boolean;
-  error: string | null;
-  isAuthRequired: boolean;
-};
 
 type DetailLineProps = {
   icon: ComponentType<{ className?: string; "aria-hidden"?: boolean }>;
@@ -59,89 +50,32 @@ const recommendationByStatus: Record<FoodStatus, string> = {
 const disclaimer =
   "Thông tin chỉ mang tính tham khảo. Hãy kiểm tra mùi, màu sắc và hướng dẫn trên bao bì trước khi sử dụng.";
 
+/**
+ * Wrapper with Suspense boundary for skeleton (Pillar 4).
+ */
 export function FoodDetailView({ foodId }: { foodId: string }) {
-  const reduceMotion = useReducedMotion();
-  const [state, setState] = useState<FoodDetailViewState>({
-    food: null,
-    isLoading: true,
-    error: null,
-    isAuthRequired: false,
-  });
-
-  useEffect(() => {
-    const controller = new AbortController();
-
-    async function loadFood() {
-      setState((current) => ({
-        ...current,
-        isLoading: true,
-        error: null,
-        isAuthRequired: false,
-      }));
-
-      try {
-        const result = await getFoodById(foodId, {
-          signal: controller.signal,
-        });
-
-        setState({
-          food: result.item,
-          isLoading: false,
-          error: result.error?.message ?? null,
-          isAuthRequired: false,
-        });
-      } catch (error) {
-        if (controller.signal.aborted) return;
-
-        const isAuthRequired = isAuthError(error);
-        if (isAuthRequired) {
-          clearAuthHint();
-        }
-
-        setState({
-          food: null,
-          isLoading: false,
-          error: isAuthRequired
-            ? getAuthErrorMessage(error)
-            : error instanceof Error
-              ? error.message
-              : "Chưa tải được chi tiết thực phẩm.",
-          isAuthRequired,
-        });
-      }
-    }
-
-    void loadFood();
-
-    return () => controller.abort();
-  }, [foodId]);
-
-  if (state.isLoading) {
-    return (
-      <DetailShell>
-        <LoadingState
-          description="Đang tải thông tin chi tiết và trạng thái khuyến nghị."
-          title="Đang mở chi tiết thực phẩm"
-        />
-      </DetailShell>
-    );
-  }
-
-  if (!state.food) {
-    if (state.isAuthRequired) {
-      return (
+  return (
+    <Suspense
+      fallback={
         <DetailShell>
-          <AuthRequiredDetail
-            message={
-              state.error ?? "Bạn cần đăng nhập để xem chi tiết thực phẩm này."
-            }
-            targetPath={`/foods/${foodId}`}
+          <LoadingState
+            description="Đang tải thông tin chi tiết và trạng thái khuyến nghị."
+            title="Đang mở chi tiết thực phẩm"
           />
-          <BackToDashboard className="mt-4" />
         </DetailShell>
-      );
-    }
+      }
+    >
+      <FoodDetailContent foodId={foodId} />
+    </Suspense>
+  );
+}
 
+function FoodDetailContent({ foodId }: { foodId: string }) {
+  const reduceMotion = useReducedMotion();
+  const { data } = useInventoryDetail(foodId);
+  const { item: food, usingMockFallback } = data;
+
+  if (!food) {
     return (
       <DetailShell>
         <EmptyState
@@ -153,7 +87,6 @@ export function FoodDetailView({ foodId }: { foodId: string }) {
     );
   }
 
-  const food = state.food;
   const openedLabel = food.openedAt
     ? format(food.openedAt, "dd/MM/yyyy")
     : "Chưa ghi nhận";
@@ -166,7 +99,7 @@ export function FoodDetailView({ foodId }: { foodId: string }) {
 
   return (
     <DetailShell>
-      {state.error ? (
+      {usingMockFallback ? (
         <Alert className="border-amber-200 bg-amber-50 text-amber-950">
           <AlertCircle aria-hidden={true} className="size-4" />
           <AlertTitle>Dữ liệu đang dùng bản dự phòng</AlertTitle>
@@ -294,29 +227,6 @@ function DetailShell({ children }: { children: ReactNode }) {
     <div className="mx-auto grid w-full max-w-5xl gap-5 px-4 py-6 sm:px-6 sm:py-12 lg:px-8">
       {children}
     </div>
-  );
-}
-
-function AuthRequiredDetail({
-  message,
-  targetPath,
-}: {
-  message: string;
-  targetPath: string;
-}) {
-  return (
-    <Alert className="border-amber-200 bg-amber-50 text-amber-950">
-      <AlertCircle aria-hidden={true} className="size-4" />
-      <AlertTitle>Cần đăng nhập</AlertTitle>
-      <AlertDescription className="text-amber-900">
-        {message}
-        <div className="mt-3">
-          <Button asChild className="rounded-2xl" size="sm">
-            <Link href={getAuthRequiredHref(targetPath)}>Đăng nhập</Link>
-          </Button>
-        </div>
-      </AlertDescription>
-    </Alert>
   );
 }
 
