@@ -38,7 +38,7 @@ export {
   FoodCategoryEnum,
   ProductSchema,
   type Product,
-} from "./products";
+} from "./products.js";
 
 export {
   type InventoryItem,
@@ -48,9 +48,9 @@ export {
   type StorageLocation,
   type FoodStatus,
   type FoodNotification,
-} from "./inventory";
+} from "./inventory.js";
 
-export { BarcodeScanResultSchema, type BarcodeScanResult } from "./scans";
+export { BarcodeScanResultSchema, type BarcodeScanResult } from "./scans.js";
 
 export {
   AddFoodCategoryEnum,
@@ -59,6 +59,6 @@ export {
   AddFoodStorageLocationEnum,
   type AddFoodStorageLocation,
   STORAGE_LOCATION_OPTIONS,
-} from "./food-constants";
+} from "./food-constants.js";
 
-export { UserProductSchema, type UserProduct } from "./user_products";
+export { UserProductSchema, type UserProduct } from "./user_products.js";
