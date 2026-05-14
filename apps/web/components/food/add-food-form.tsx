@@ -19,18 +19,26 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { getAuthErrorMessage, isAuthError } from "@/lib/api/client";
-import { createFood } from "@/lib/api/foods";
+import { isAuthError, getAuthErrorMessage } from "@/lib/api/client";
 import type { AddFoodCategory, AddFoodStorageLocation } from "@/lib/api/types";
 import { clearAuthHint, getAuthRequiredHref } from "@/lib/auth-session";
+import { useAddInventoryItem } from "@/hooks/mutations/use-add-inventory-item";
 
-import { createUserProduct } from "@/lib/api/user-products";
 import {
-  CATEGORY_OPTIONS,
-  STORAGE_LOCATION_OPTIONS,
+  CATEGORY_OPTIONS as _CATEGORY_OPTIONS,
+  STORAGE_LOCATION_OPTIONS as _STORAGE_LOCATION_OPTIONS,
 } from "@repo/types";
 
-// Các options đã được chuyển ra @repo/types
+// Defensive guard: đảm bảo không crash nếu import bị undefined (Issue #13)
+const CATEGORY_OPTIONS = _CATEGORY_OPTIONS ?? [];
+const STORAGE_LOCATION_OPTIONS = _STORAGE_LOCATION_OPTIONS ?? [];
+
+if (!_CATEGORY_OPTIONS || !_STORAGE_LOCATION_OPTIONS) {
+  console.warn(
+    "[AddFoodForm] CATEGORY_OPTIONS or STORAGE_LOCATION_OPTIONS resolved to undefined. " +
+    "Check @repo/types exports and build cache."
+  );
+}
 
 const addFoodFormSchema = z.object({
   name: z.string().trim().min(1, "Tên sản phẩm không được để trống."),
@@ -59,6 +67,8 @@ const defaultValues: AddFoodFormValues = {
 
 export function AddFoodForm() {
   const router = useRouter();
+  const addMutation = useAddInventoryItem();
+
   const {
     control,
     formState: { errors, isSubmitting },
@@ -89,24 +99,18 @@ export function AddFoodForm() {
     }
 
     try {
-      await Promise.all([
-        createFood({
-          name: values.name,
-          category,
-          openedAt: values.openedAt,
-          expiryDate: values.expiryDate || undefined,
-          storageLocation,
-          notes: values.notes || undefined,
-        }),
-        createUserProduct({
-          name: values.name,
-          category,
-          storageLocation,
-          note: values.notes || undefined,
-        }),
-      ]);
+      // Pillar 3: Use optimistic mutation hook
+      await addMutation.mutateAsync({
+        name: values.name,
+        category,
+        openedAt: values.openedAt,
+        expiryDate: values.expiryDate || undefined,
+        storageLocation,
+        notes: values.notes || undefined,
+      });
+
+      // Navigate back — cache is already optimistically updated
       router.push("/#digital-fridge");
-      router.refresh();
     } catch (error) {
       if (isAuthError(error)) {
         clearAuthHint();
@@ -137,6 +141,7 @@ export function AddFoodForm() {
 
   const isAuthRootError = errors.root?.type === "auth";
   const loginHref = getAuthRequiredHref("/foods/new");
+  const isBusy = isSubmitting || addMutation.isPending;
 
   return (
     <form
@@ -192,7 +197,7 @@ export function AddFoodForm() {
                 required
               >
                 <Select
-                  disabled={isSubmitting}
+                  disabled={isBusy}
                   onValueChange={field.onChange}
                   value={field.value}
                 >
@@ -226,7 +231,7 @@ export function AddFoodForm() {
                 required
               >
                 <Select
-                  disabled={isSubmitting}
+                  disabled={isBusy}
                   onValueChange={field.onChange}
                   value={field.value}
                 >
@@ -313,7 +318,7 @@ export function AddFoodForm() {
         <div className="flex flex-col-reverse gap-3 sm:flex-row">
           <Button
             className="h-11 justify-center rounded-2xl"
-            disabled={isSubmitting}
+            disabled={isBusy}
             onClick={fillSampleProduct}
             type="button"
             variant="outline"
@@ -323,16 +328,16 @@ export function AddFoodForm() {
           </Button>
           <Button
             className="h-11 justify-center rounded-2xl px-5"
-            disabled={isSubmitting}
+            disabled={isBusy}
             type="submit"
           >
-            {isSubmitting ? (
+            {isBusy ? (
               <LoaderCircle
                 aria-hidden={true}
                 className="size-4 animate-spin motion-reduce:animate-none"
               />
             ) : null}
-            {isSubmitting ? "Đang lưu..." : "Lưu thực phẩm"}
+            {isBusy ? "Đang lưu..." : "Lưu thực phẩm"}
           </Button>
         </div>
       </div>
