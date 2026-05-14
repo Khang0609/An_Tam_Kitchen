@@ -1,13 +1,13 @@
 "use client";
 
 import { Suspense } from "react";
-import { FoodStatusBadge, LoadingState } from "@/components/foundation";
+import { FoodStatusBadge, FoodInventoryPanelSkeleton } from "@/components/foundation";
 import { useInventoryList } from "@/hooks/queries/use-inventory-list";
 
 export function FoodInventoryPanel() {
   return (
     <Suspense
-      fallback={<LoadingState description="Đang tải danh sách thực phẩm." />}
+      fallback={<FoodInventoryPanelSkeleton />}
     >
       <FoodInventoryPanelContent />
     </Suspense>

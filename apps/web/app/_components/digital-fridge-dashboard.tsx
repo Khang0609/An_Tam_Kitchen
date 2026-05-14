@@ -21,11 +21,11 @@ import type { ComponentType, ReactNode } from "react";
 import type { FoodStatus } from "@repo/types";
 import { useReducedMotion } from "@/hooks/use-reduced-motion";
 import {
+  DashboardSkeleton,
   EmptyState,
   ErrorState,
   FoodStatusBadge,
   getFoodStatusLabel,
-  LoadingState,
   SectionCard,
 } from "@/components/foundation";
 import { Button } from "@/components/ui/button";
@@ -57,10 +57,7 @@ export function DigitalFridgeDashboard() {
       <Suspense
         fallback={
           <DashboardShell>
-            <LoadingState
-              description="Đang tải danh sách thực phẩm và trạng thái khuyến nghị."
-              title="Đang mở tủ lạnh số"
-            />
+            <DashboardSkeleton />
           </DashboardShell>
         }
       >

@@ -25,11 +25,20 @@ import { clearAuthHint, getAuthRequiredHref } from "@/lib/auth-session";
 import { useAddInventoryItem } from "@/hooks/mutations/use-add-inventory-item";
 
 import {
-  CATEGORY_OPTIONS,
-  STORAGE_LOCATION_OPTIONS,
+  CATEGORY_OPTIONS as _CATEGORY_OPTIONS,
+  STORAGE_LOCATION_OPTIONS as _STORAGE_LOCATION_OPTIONS,
 } from "@repo/types";
 
-// Các options đã được chuyển ra @repo/types
+// Defensive guard: đảm bảo không crash nếu import bị undefined (Issue #13)
+const CATEGORY_OPTIONS = _CATEGORY_OPTIONS ?? [];
+const STORAGE_LOCATION_OPTIONS = _STORAGE_LOCATION_OPTIONS ?? [];
+
+if (!_CATEGORY_OPTIONS || !_STORAGE_LOCATION_OPTIONS) {
+  console.warn(
+    "[AddFoodForm] CATEGORY_OPTIONS or STORAGE_LOCATION_OPTIONS resolved to undefined. " +
+    "Check @repo/types exports and build cache."
+  );
+}
 
 const addFoodFormSchema = z.object({
   name: z.string().trim().min(1, "Tên sản phẩm không được để trống."),

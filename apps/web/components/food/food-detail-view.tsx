@@ -20,8 +20,8 @@ import { useReducedMotion } from "@/hooks/use-reduced-motion";
 import type { FoodStatus } from "@repo/types";
 import {
   EmptyState,
+  FoodDetailSkeleton,
   FoodStatusBadge,
-  LoadingState,
   SectionCard,
 } from "@/components/foundation";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -58,10 +58,7 @@ export function FoodDetailView({ foodId }: { foodId: string }) {
     <Suspense
       fallback={
         <DetailShell>
-          <LoadingState
-            description="Đang tải thông tin chi tiết và trạng thái khuyến nghị."
-            title="Đang mở chi tiết thực phẩm"
-          />
+          <FoodDetailSkeleton />
         </DetailShell>
       }
     >

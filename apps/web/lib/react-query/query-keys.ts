@@ -7,6 +7,15 @@
  * @see https://tkdodo.eu/blog/effective-react-query-keys
  */
 
+import type { InventoryItem, Product } from "@repo/types";
+
+// ─── Inventory Filter Types ────────────────────────────
+
+export type InventoryListFilters = {
+  location?: string;
+  status?: string;
+};
+
 // ─── Inventory (Tủ lạnh số) ───────────────────────────
 
 export const inventoryKeys = {
@@ -17,14 +26,15 @@ export const inventoryKeys = {
   lists: () => [...inventoryKeys.all, "list"] as const,
 
   /** ['inventory', 'list', { …filters }] — one specific list */
-  list: (filters: Record<string, unknown> = {}) =>
+  list: (filters: InventoryListFilters = {}) =>
     [...inventoryKeys.lists(), filters] as const,
 
   /** ['inventory', 'detail'] — matches all details */
   details: () => [...inventoryKeys.all, "detail"] as const,
 
   /** ['inventory', 'detail', id] — one specific item */
-  detail: (id: string) => [...inventoryKeys.details(), id] as const,
+  detail: (id: InventoryItem["id"]) =>
+    [...inventoryKeys.details(), id] as const,
 } as const;
 
 // ─── Products (Sản phẩm catalog) ──────────────────────
@@ -39,7 +49,33 @@ export const productKeys = {
 
   details: () => [...productKeys.all, "detail"] as const,
 
-  detail: (id: string) => [...productKeys.details(), id] as const,
+  detail: (id: Product["id"]) => [...productKeys.details(), id] as const,
+} as const;
+
+// ─── Catalog (Danh mục sản phẩm toàn cục + riêng) ────
+
+export type CatalogListFilters = {
+  search?: string;
+  category?: string;
+  global?: boolean;
+};
+
+export const catalogKeys = {
+  /** ['catalog'] — matches everything catalog */
+  all: ["catalog"] as const,
+
+  /** ['catalog', 'list'] — matches all catalog list variants */
+  lists: () => [...catalogKeys.all, "list"] as const,
+
+  /** ['catalog', 'list', { …filters }] — one specific catalog list */
+  list: (filters: CatalogListFilters = {}) =>
+    [...catalogKeys.lists(), filters] as const,
+
+  /** ['catalog', 'detail'] — matches all catalog details */
+  details: () => [...catalogKeys.all, "detail"] as const,
+
+  /** ['catalog', 'detail', id] — one specific catalog item */
+  detail: (id: Product["id"]) => [...catalogKeys.details(), id] as const,
 } as const;
 
 // ─── Auth ──────────────────────────────────────────────
@@ -49,3 +85,4 @@ export const authKeys = {
 
   session: () => [...authKeys.all, "session"] as const,
 } as const;
+
