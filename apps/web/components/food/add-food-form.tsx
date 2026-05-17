@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
 import { format, subDays } from "date-fns";
 import { AlertCircle, ArrowLeft, LoaderCircle, Lock, Sparkles } from "lucide-react";
@@ -7,6 +8,9 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Controller, useForm } from "react-hook-form";
 import { z } from "zod";
+import { BarcodeScannerModal } from "@/components/scan/barcode-scanner-modal";
+import { parseFoodAIs } from "@/components/scan/gs1-parser";
+import { getProductByBarcode } from "@/lib/api/products";
 import { FormFieldShell } from "@/components/foundation";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -59,6 +63,7 @@ const defaultValues: AddFoodFormValues = {
 
 export function AddFoodForm() {
   const router = useRouter();
+  const [scannerOpen, setScannerOpen] = useState(false);
   const {
     control,
     formState: { errors, isSubmitting },
@@ -66,11 +71,61 @@ export function AddFoodForm() {
     register,
     reset,
     setError,
+    setValue,
+    getValues,
   } = useForm<AddFoodFormValues>({
     defaultValues,
     resolver: standardSchemaResolver(addFoodFormSchema),
   });
   const maxDate = format(new Date(), "yyyy-MM-dd");
+
+  const handleBarcodeDetected = async (gtin: string, rawCode: string) => {
+    setScannerOpen(false);
+    try {
+      const product = await getProductByBarcode(gtin);
+      if (product) {
+        // Ánh xạ danh mục từ Backend (FoodCategory) sang Frontend (AddFoodCategory)
+        const categoryMap: Record<string, string> = {
+          dairy: "milk",
+          sauces_spices: "sauce",
+          drinks: "drink",
+        };
+        const mappedCategory = categoryMap[product.category] || "other";
+
+        setValue("name", product.name, { shouldValidate: true });
+        setValue("category", mappedCategory, { shouldValidate: true });
+        setValue("storageLocation", "fridge", { shouldValidate: true });
+        setValue("openedAt", maxDate, { shouldValidate: true });
+
+        // Parse AI từ rawCode
+        const foodAIs = parseFoodAIs(rawCode);
+
+        if (foodAIs.expiryDate) {
+          setValue("expiryDate", foodAIs.expiryDate, { shouldValidate: true });
+        }
+
+        if (foodAIs.lot || foodAIs.weight) {
+          const currentNotes = getValues("notes") || "";
+          let newNotes = currentNotes;
+
+          if (foodAIs.lot) {
+            newNotes += `\nLô: ${foodAIs.lot}`;
+          }
+          if (foodAIs.weight) {
+            newNotes += `\nKL: ${foodAIs.weight}`;
+          }
+
+          newNotes = newNotes.trim();
+          setValue("notes", newNotes, { shouldValidate: true });
+        }
+      } else {
+        alert("Không tìm thấy sản phẩm trong hệ thống. Vui lòng nhập thủ công.");
+      }
+    } catch (error) {
+      console.error("Lỗi tìm sản phẩm:", error);
+      alert("Có lỗi khi tra cứu sản phẩm. Vui lòng thử lại sau.");
+    }
+  };
 
   async function onSubmit(values: AddFoodFormValues) {
     const category = toAddFoodCategory(values.category);
@@ -170,14 +225,25 @@ export function AddFoodForm() {
           label="Tên sản phẩm"
           required
         >
-          <Input
-            aria-invalid={Boolean(errors.name)}
-            autoComplete="off"
-            className="h-11 rounded-2xl"
-            id="name"
-            placeholder="Ví dụ: Sữa tươi Vinamilk"
-            {...register("name")}
-          />
+          <div className="flex gap-2">
+            <Input
+              aria-invalid={Boolean(errors.name)}
+              autoComplete="off"
+              className="h-11 rounded-2xl flex-1"
+              id="name"
+              placeholder="Ví dụ: Sữa tươi Vinamilk"
+              {...register("name")}
+            />
+            <Button
+              type="button"
+              variant="outline"
+              className="h-11 rounded-2xl px-4 flex shrink-0 items-center gap-1.5 border-dashed border-gray-300 hover:border-gray-400 hover:bg-gray-50 text-gray-600 font-medium"
+              onClick={() => setScannerOpen(true)}
+            >
+              <Sparkles className="size-4 text-amber-500 animate-pulse" />
+              Quét mã
+            </Button>
+          </div>
         </FormFieldShell>
 
         <div className="grid gap-5 sm:grid-cols-2">
@@ -336,6 +402,11 @@ export function AddFoodForm() {
           </Button>
         </div>
       </div>
+      <BarcodeScannerModal
+        open={scannerOpen}
+        onOpenChange={setScannerOpen}
+        onDetected={handleBarcodeDetected}
+      />
     </form>
   );
 }

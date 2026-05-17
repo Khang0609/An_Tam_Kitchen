@@ -6,7 +6,20 @@ import { IProductRepository, IInventoryRepository, IUserRepository } from './int
  * Mock Product Repository
  */
 export class MockProductRepository implements IProductRepository {
-  private products: Product[] = [];
+  private products: Product[] = [
+    {
+      id: "prod-mock-1",
+      name: "Sữa tươi thanh trùng",
+      company: "Vinamilk",
+      barcode: "8934563185152",
+      category: "dairy",
+      imageUrl: undefined,
+      ownerId: undefined,
+      isGlobal: true,
+      daysBeforeOpen: 30,
+      daysAfterOpen: 7,
+    } as Product
+  ];
 
   async create(data: Omit<Product, 'id'>): Promise<Product> {
     const newProduct: Product = {

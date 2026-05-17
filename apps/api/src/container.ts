@@ -1,4 +1,5 @@
 import { prisma } from '@repo/database';
+// Triggering server restart to load new mock product
 import {
   PrismaProductRepository,
   PrismaInventoryRepository,
@@ -17,7 +18,7 @@ import { InventoryController } from './controllers/inventory.controller.js';
 import { UserProductController } from './controllers/user-product.controller.js';
 
 // ─── Configuration ───────────────────────────────────────────────────────────
-const useMock = process.env.USE_MOCK_DATA === 'true';
+const useMock = process.env.USE_MOCK_DATA !== 'false';
 
 // ─── Repositories ────────────────────────────────────────────────────────────
 export const productRepository: IProductRepository = useMock

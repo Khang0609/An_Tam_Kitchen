@@ -111,8 +111,27 @@ export default function LoginPage() {
     handleLogin(email, password);
   }
 
-  function handleGuestLogin() {
-    handleLogin(GUEST_EMAIL, GUEST_PASSWORD, true);
+  async function handleGuestLogin() {
+    setMessage("");
+    setError("");
+    setIsGuestLoading(true);
+
+    try {
+      const loginPayload = await import("@/lib/api/auth").then((m) => m.guestLogin());
+      setAuthHint(
+        getUserFromAuthResponse(loginPayload) ?? { name: "Tài khoản khách", isGuest: true }
+      );
+      setMessage("Vào tài khoản khách thành công! Đang chuyển tiếp...");
+      setTimeout(() => {
+        router.push(safeNext ?? "/");
+      }, 1000);
+    } catch (err) {
+      const errorMessage =
+        err instanceof Error ? err.message : "Đăng nhập khách thất bại.";
+      setError(errorMessage);
+    } finally {
+      setIsGuestLoading(false);
+    }
   }
 
   const anyLoading = isLoading || isGuestLoading;
