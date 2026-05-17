@@ -1,22 +1,13 @@
 import { useState, useRef, useEffect } from 'react';
 import { Html5Qrcode } from 'html5-qrcode';
 
-interface UseBarcodeScannerResult {
-  barcode: string | null;
-  error: string | null;
-  scanning: boolean;
-  startScanner: (elementId: string) => void;
-  stopScanner: () => void;
-}
-
-export function useBarcodeScanner(): UseBarcodeScannerResult {
+export function useBarcodeScanner() {
   const [barcode, setBarcode] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [scanning, setScanning] = useState(false);
   const scannerRef = useRef<Html5Qrcode | null>(null);
 
   const startScanner = (elementId: string) => {
-    // Nếu đã có scanner đang chạy thì không tạo mới
     if (scannerRef.current) return;
 
     const scanner = new Html5Qrcode(elementId);
@@ -28,13 +19,12 @@ export function useBarcodeScanner(): UseBarcodeScannerResult {
 
     scanner
       .start(
-        { facingMode: 'environment' }, // camera sau
+        { facingMode: 'environment' },
         {
           fps: 10,
           qrbox: { width: 250, height: 150 },
-          // Cho phép quét nhiều định dạng, không chỉ QR
           formatsToSupport: [
-            1, // EAN_13 (Html5QrcodeSupportedFormats.EAN_13)
+            1, // EAN_13
             2, // EAN_8
             3, // UPC_A
             4, // UPC_E
@@ -51,52 +41,50 @@ export function useBarcodeScanner(): UseBarcodeScannerResult {
           ],
         },
         (decodedText) => {
-          // Thành công
           setBarcode(decodedText);
-          setError(null);
-          // Dừng camera sau khi quét xong
-          scanner.stop().then(() => {
-            scannerRef.current = null;
-            setScanning(false);
-          }).catch((err) => {
-            console.error('Failed to stop scanner after success:', err);
-          });
         },
-        () => {
-          // Ignore lỗi quét liên tục (ví dụ không nhận diện được), không hiển thị ra UI
-        }
+        () => {}
       )
       .catch((err) => {
-        console.error('Cannot start scanner:', err);
-        setError('Không thể truy cập camera. Hãy kiểm tra quyền hoặc kết nối HTTPS.');
+        console.error(err);
+        setError('Không thể truy cập camera. Kiểm tra quyền hoặc kết nối HTTPS.');
         setScanning(false);
-        scannerRef.current = null;
+        scannerRef.current = null; // reset để có thể thử lại
       });
   };
 
-  const stopScanner = () => {
-    if (scannerRef.current) {
-      scannerRef.current
-        .stop()
-        .then(() => {
-          scannerRef.current = null;
-          setScanning(false);
-        })
-        .catch((err) => {
-          console.error('Failed to stop scanner:', err);
-        });
+  // stopScanner giờ trả về Promise để component chờ
+  const stopScanner = async (): Promise<void> => {
+    if (!scannerRef.current) return;
+
+    // Kiểm tra trạng thái scanner để tránh lỗi "not running"
+    try {
+      const state = scannerRef.current.getState();
+      // Dùng so sánh trực tiếp để tránh các vấn đề phiên bản hoặc import của Html5QrcodeScanState enum
+      if (state === 2 || state === 3) { // 2 = SCANNING, 3 = PAUSED in Html5QrcodeScanState
+        await scannerRef.current.stop();
+      }
+    } catch (e) {
+      console.warn('Scanner already stopped or error:', e);
+    } finally {
+      scannerRef.current = null;
+      setScanning(false);
     }
   };
 
-  // Cleanup khi component bị unmount
+  // Cleanup an toàn
   useEffect(() => {
     return () => {
       if (scannerRef.current) {
-        scannerRef.current.stop().then(() => {
-          scannerRef.current = null;
-        }).catch(() => {
-          // Ignore errors on unmount stop
-        });
+        const scanner = scannerRef.current;
+        try {
+          const state = scanner.getState();
+          if (state === 2 || state === 3) {
+            scanner.stop().catch(() => {});
+          }
+        } catch {
+          // Bỏ qua lỗi khi unmount
+        }
       }
     };
   }, []);
