@@ -10,7 +10,25 @@ export function useBarcodeScanner() {
   const startScanner = (elementId: string) => {
     if (scannerRef.current) return;
 
-    const scanner = new Html5Qrcode(elementId);
+    const scanner = new Html5Qrcode(elementId, {
+      verbose: false,
+      formatsToSupport: [
+        1, // EAN_13
+        2, // EAN_8
+        3, // UPC_A
+        4, // UPC_E
+        6, // CODE_128
+        5, // CODE_39
+        7, // CODE_93
+        8, // CODABAR
+        9, // ITF
+        11, // RSS_14
+        12, // RSS_EXPANDED
+        0, // QR_CODE
+        13, // DATA_MATRIX
+        10, // PDF417
+      ],
+    });
     scannerRef.current = scanner;
 
     setScanning(true);
@@ -23,22 +41,6 @@ export function useBarcodeScanner() {
         {
           fps: 10,
           qrbox: { width: 250, height: 150 },
-          formatsToSupport: [
-            1, // EAN_13
-            2, // EAN_8
-            3, // UPC_A
-            4, // UPC_E
-            6, // CODE_128
-            5, // CODE_39
-            7, // CODE_93
-            8, // CODABAR
-            9, // ITF
-            11, // RSS_14
-            12, // RSS_EXPANDED
-            0, // QR_CODE
-            13, // DATA_MATRIX
-            10, // PDF417
-          ],
         },
         (decodedText) => {
           setBarcode(decodedText);
