@@ -32,6 +32,33 @@ Tích hợp tính năng quét mã vạch (Barcode Scanner) cho ứng dụng Bế
 - **Tự động hóa Môi trường Giả lập (Mock Data):** Để giải quyết lỗi Backend `Internal Server Error` do thiếu file `.env` chứa Database URL, mã nguồn tại `apps/api/src/container.ts` đã được tùy chỉnh mặc định kích hoạt cờ `USE_MOCK_DATA !== 'false'`.
 - **Seed dữ liệu Mock:** Thêm thủ công sản phẩm *"Sữa tươi thanh trùng"* (mã vạch `8934563185152`) vào `packages/repositories/mock.ts` và thiết lập rebuild lại module, giúp người dùng lập tức có dữ liệu test auto-fill bằng camera mà không cần cài đặt PostgreSQL.
 
+### 6. Tích hợp bóc tách AI (Application Identifiers)
+- **Nâng cấp GS1 Parser (`gs1-parser.ts`):** Mở rộng tính năng phân tích cú pháp mã vạch nâng cao, hỗ trợ trích xuất AI 15 (Ngày hết hạn), AI 10 (Số lô) và AI 310n (Trọng lượng tịnh) từ chuỗi `rawCode`.
+- **Cập nhật luồng truyền dữ liệu:** Mở rộng interface của `BarcodeScanner` và `BarcodeScannerModal` để thu thập và truyền trả cả `rawCode` nguyên bản song song với `gtin`.
+- **Hoàn thiện Auto-fill Form (`add-food-form.tsx`):** Tích hợp hàm `parseFoodAIs` vào biểu mẫu. Tự động kiểm tra và đổ dữ liệu Ngày hết hạn (`expiryDate`) cũng như tự động nối ghép thông tin Số lô (`lot`) và Khối lượng (`weight`) vào phần Ghi chú (`notes`) một cách mượt mà mà không làm mất ghi chú cũ của người dùng.
+
+---
+
+## 🧪 Hướng dẫn Kiểm tra (Test) Thực Tế với QR Code
+
+Để kiểm tra độ nhạy của tính năng bóc tách AI trên Form thêm thực phẩm mà không cần phải có sản phẩm đóng gói chuẩn GS1 thật trên tay, bạn có thể tự tạo mã QR theo các bước sau:
+
+**Bước 1: Chuẩn bị mã vạch chứa AI (Mock code)**
+Hãy copy đoạn mã vạch thô có chứa các trường thông tin chuẩn GS1 sau đây:
+> `011234567890123415211231`
+*(Mã này bao gồm: AI 01 - GTIN, và AI 15 - Ngày hết hạn 31/12/2021)*
+
+**Bước 2: Tạo QR Code hiển thị trên thiết bị phụ**
+1. Truy cập trang web: [qr-code-generator.com](https://www.qr-code-generator.com/) (hoặc bất kỳ trang tạo mã QR miễn phí nào).
+2. Dán đoạn mã `011234567890123415211231` vào ô Text.
+3. Trang web sẽ ngay lập tức tạo ra một mã QR. (Hãy mở mã QR này trên điện thoại hoặc màn hình phụ).
+
+**Bước 3: Quét và Nghiệm thu**
+1. Đảm bảo ứng dụng đang chạy ở môi trường máy chủ cục bộ (`pnpm dev`).
+2. Mở trình duyệt web truy cập `http://localhost:3000/foods/new`.
+3. Nhấn **Quét mã** và đưa camera về phía mã QR vừa tạo.
+4. **Kết quả:** Form sẽ ngay lập tức được điền các trường như tên sản phẩm, danh mục, VÀ đặc biệt trường **Hạn sử dụng** sẽ tự động được điền thành `31/12/2021` (`2021-12-31`).
+
 ---
 
 ## 🚀 Các bước kế tiếp (Khuyến nghị)
