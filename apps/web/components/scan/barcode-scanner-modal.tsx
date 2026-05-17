@@ -6,7 +6,7 @@ import { BarcodeScanner } from './barcode-scanner';
 interface BarcodeScannerModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onDetected: (gtin: string) => void;
+  onDetected: (gtin: string, rawCode: string) => void;
 }
 
 export const BarcodeScannerModal = ({

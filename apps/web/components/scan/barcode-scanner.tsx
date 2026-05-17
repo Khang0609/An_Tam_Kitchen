@@ -6,7 +6,7 @@ import { extractGTIN } from './gs1-parser';
 import { Button } from '@/components/ui/button';
 
 interface BarcodeScannerProps {
-  onDetected: (gtin: string) => void;
+  onDetected: (gtin: string, rawCode: string) => void;
   onClose: () => void;
 }
 
@@ -33,7 +33,7 @@ export const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onDetected, onCl
 
       const gtin = extractGTIN(barcode);
       if (gtin) {
-        onDetected(gtin);
+        onDetected(gtin, barcode);
       } else {
         alert(`Không thể trích xuất GTIN từ mã "${barcode}". Vui lòng thử lại.`);
       }

@@ -9,6 +9,7 @@ import { useRouter } from "next/navigation";
 import { Controller, useForm } from "react-hook-form";
 import { z } from "zod";
 import { BarcodeScannerModal } from "@/components/scan/barcode-scanner-modal";
+import { parseFoodAIs } from "@/components/scan/gs1-parser";
 import { getProductByBarcode } from "@/lib/api/products";
 import { FormFieldShell } from "@/components/foundation";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -71,13 +72,14 @@ export function AddFoodForm() {
     reset,
     setError,
     setValue,
+    getValues,
   } = useForm<AddFoodFormValues>({
     defaultValues,
     resolver: standardSchemaResolver(addFoodFormSchema),
   });
   const maxDate = format(new Date(), "yyyy-MM-dd");
 
-  const handleBarcodeDetected = async (gtin: string) => {
+  const handleBarcodeDetected = async (gtin: string, rawCode: string) => {
     setScannerOpen(false);
     try {
       const product = await getProductByBarcode(gtin);
@@ -94,6 +96,28 @@ export function AddFoodForm() {
         setValue("category", mappedCategory, { shouldValidate: true });
         setValue("storageLocation", "fridge", { shouldValidate: true });
         setValue("openedAt", maxDate, { shouldValidate: true });
+
+        // Parse AI từ rawCode
+        const foodAIs = parseFoodAIs(rawCode);
+
+        if (foodAIs.expiryDate) {
+          setValue("expiryDate", foodAIs.expiryDate, { shouldValidate: true });
+        }
+
+        if (foodAIs.lot || foodAIs.weight) {
+          const currentNotes = getValues("notes") || "";
+          let newNotes = currentNotes;
+
+          if (foodAIs.lot) {
+            newNotes += `\nLô: ${foodAIs.lot}`;
+          }
+          if (foodAIs.weight) {
+            newNotes += `\nKL: ${foodAIs.weight}`;
+          }
+
+          newNotes = newNotes.trim();
+          setValue("notes", newNotes, { shouldValidate: true });
+        }
       } else {
         alert("Không tìm thấy sản phẩm trong hệ thống. Vui lòng nhập thủ công.");
       }
