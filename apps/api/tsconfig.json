@@ -9,6 +9,11 @@
     "allowImportingTsExtensions": false,
     "resolveJsonModule": true
   },
+  "tsc-alias": {
+    "resolveExtensions": {
+      "utils": ["js"]
+    }
+  },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "src/__tests__/**/*", "**/*.test.ts"]
 }
