@@ -38,7 +38,6 @@ function CatalogContent() {
 
   return (
     <SectionCard
-      eyebrow="Sản phẩm"
       title="Danh mục sản phẩm"
       description="Tìm kiếm và duyệt sản phẩm trong hệ thống."
     >

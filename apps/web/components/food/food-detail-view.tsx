@@ -109,16 +109,13 @@ function FoodDetailContent({ foodId }: { foodId: string }) {
 
       <motion.section
         animate={reduceMotion ? undefined : { opacity: 1, y: 0 }}
-        className="rounded-3xl border bg-background p-5 shadow-sm sm:p-6"
+        className="rounded-2xl border bg-background p-5 shadow-sm sm:p-6"
         initial={reduceMotion ? undefined : { opacity: 0, y: 10 }}
         transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
       >
         <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div className="min-w-0">
-            <p className="text-sm font-semibold uppercase tracking-[0.14em] text-primary">
-              Chi tiết thực phẩm
-            </p>
-            <h1 className="mt-3 text-2xl font-semibold leading-tight tracking-normal sm:text-4xl">
+            <h1 className="mt-1 text-2xl font-semibold leading-tight tracking-normal sm:text-4xl">
               {food.displayName}
             </h1>
           </div>
@@ -138,7 +135,6 @@ function FoodDetailContent({ foodId }: { foodId: string }) {
       >
         <SectionCard
           description="Các mốc chính giúp gia đình xem lại thông tin trước khi sử dụng."
-          eyebrow="Thông tin sản phẩm"
           title="Mốc bảo quản"
         >
           <div className="grid gap-3 sm:grid-cols-2">
@@ -180,7 +176,6 @@ function FoodDetailContent({ foodId }: { foodId: string }) {
 
         <SectionCard
           description="Phần này giải thích nguồn hoặc rule đang tạo ra trạng thái hiện tại."
-          eyebrow="Nguồn trạng thái"
           title="Vì sao có trạng thái này?"
         >
           <div className="rounded-2xl border bg-card p-4">
