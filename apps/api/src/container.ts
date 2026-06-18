@@ -13,9 +13,9 @@ import {
   IUserProductRepository,
   PrismaUserProductRepository
 } from '@repo/repositories';
-import { ProductController } from './controllers/product.controller';
-import { InventoryController } from './controllers/inventory.controller';
-import { UserProductController } from './controllers/user-product.controller';
+import { ProductController } from './controllers/product.controller.js';
+import { InventoryController } from './controllers/inventory.controller.js';
+import { UserProductController } from './controllers/user-product.controller.js';
 
 // ─── Configuration ───────────────────────────────────────────────────────────
 const useMock = process.env.USE_MOCK_DATA !== 'false';

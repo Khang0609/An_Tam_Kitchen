@@ -6,7 +6,7 @@ import {
   forgotPassword,
   resetPassword,
   guestLogin,
-} from "../controllers/auth.controller";
+} from "../controllers/auth.controller.js";
 import rateLimit from "express-rate-limit";
 
 const router: Router = express.Router();

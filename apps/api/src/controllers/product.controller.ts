@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { IProductRepository } from '@repo/repositories';
-import { CreateProductBody, UpdateProductBody } from '../validation/product.validation';
+import { CreateProductBody, UpdateProductBody } from '../validation/product.validation.js';
 
 /**
  * ProductController
