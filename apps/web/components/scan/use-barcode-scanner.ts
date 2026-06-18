@@ -42,12 +42,12 @@ export function useBarcodeScanner() {
           fps: 10,
           qrbox: { width: 250, height: 150 },
         },
-        (decodedText) => {
+        (decodedText: string) => {
           setBarcode(decodedText);
         },
         () => {}
       )
-      .catch((err) => {
+      .catch((err: any) => {
         console.error(err);
         setError('Không thể truy cập camera. Kiểm tra quyền hoặc kết nối HTTPS.');
         setScanning(false);
