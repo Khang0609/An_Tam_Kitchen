@@ -4,7 +4,9 @@
     "outDir": "dist",
     "rootDir": "src",
     "noEmit": false,
-    "moduleResolution": "node16",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": false,
     "resolveJsonModule": true,
     "paths": {
       "@/*": ["./src/*"]
