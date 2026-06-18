@@ -1,6 +1,6 @@
 import { Product, InventoryItem, User } from '@repo/types';
 import { mockDatabase } from '@repo/database';
-import { IProductRepository, IInventoryRepository, IUserRepository } from './interfaces.js';
+import { IProductRepository, IInventoryRepository, IUserRepository, IUserProductRepository } from './interfaces.js';
 
 /**
  * Mock Product Repository
@@ -145,3 +145,35 @@ export class MockUserRepository implements IUserRepository {
 }
 
 export const userRepository = new MockUserRepository();
+
+/**
+ * Mock UserProduct Repository
+ */
+export class MockUserProductRepository implements IUserProductRepository {
+  private items: any[] = [];
+
+  async create(data: any): Promise<any> {
+    const newItem = {
+      ...data,
+      id: crypto.randomUUID(),
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+    this.items.push(newItem);
+    return newItem;
+  }
+
+  async findAllByUserId(userId: string): Promise<any[]> {
+    return this.items.filter((item) => item.userId === userId);
+  }
+
+  async findById(id: string): Promise<any | null> {
+    return this.items.find((item) => item.id === id) || null;
+  }
+
+  async delete(id: string): Promise<boolean> {
+    const initialLength = this.items.length;
+    this.items = this.items.filter((item) => item.id !== id);
+    return this.items.length < initialLength;
+  }
+}

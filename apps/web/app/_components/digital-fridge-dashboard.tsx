@@ -16,33 +16,30 @@ import {
 } from "lucide-react";
 import { motion } from "motion/react";
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { Suspense, useMemo } from "react";
 import type { ComponentType, ReactNode } from "react";
 import type { FoodStatus } from "@repo/types";
 import { useReducedMotion } from "@/hooks/use-reduced-motion";
 import {
+  DashboardSkeleton,
   EmptyState,
   ErrorState,
   FoodStatusBadge,
   getFoodStatusLabel,
-  LoadingState,
   SectionCard,
 } from "@/components/foundation";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useFoods } from "@/hooks/use-foods";
+import { useInventoryList } from "@/hooks/queries/use-inventory-list";
 import type { FoodItemViewModel } from "@/lib/api/types";
 import { getAuthRequiredHref, useAuthHint } from "@/lib/auth-session";
+import {
+  useDashboardUIStore,
+  matchesDashboardFilter,
+  DASHBOARD_FILTER_OPTIONS,
+  type DashboardFilterValue,
+} from "@/lib/stores/dashboard-ui-store";
 import { cn } from "@/lib/utils";
-
-type FilterValue = "all" | "use_soon" | "check" | "safe";
-
-const filterOptions: Array<{ value: FilterValue; label: string }> = [
-  { value: "all", label: "Tất cả" },
-  { value: "use_soon", label: "Nên dùng sớm" },
-  { value: "check", label: "Cần kiểm tra" },
-  { value: "safe", label: "Trong mốc khuyến nghị" },
-];
 
 const statusPriority: Record<FoodStatus, number> = {
   not_recommended: 0,
@@ -51,16 +48,37 @@ const statusPriority: Record<FoodStatus, number> = {
   fresh: 3,
 };
 
+/**
+ * Wrapper component with Suspense boundary for skeleton screen (Pillar 4).
+ */
 export function DigitalFridgeDashboard() {
-  const {
-    foods,
-    isLoading,
-    error,
-    isAuthRequired,
-    usingMockFallback,
-    refresh,
-  } = useFoods();
-  const [filter, setFilter] = useState<FilterValue>("all");
+  return (
+    <section className="scroll-mt-20 bg-card py-12 sm:py-16" id="digital-fridge">
+      <Suspense
+        fallback={
+          <DashboardShell>
+            <DashboardSkeleton />
+          </DashboardShell>
+        }
+      >
+        <DashboardContent />
+      </Suspense>
+    </section>
+  );
+}
+
+/**
+ * Inner component that uses useSuspenseQuery — will suspend while loading.
+ * Zustand handles UI filter state; TanStack handles all server state.
+ */
+function DashboardContent() {
+  const { data } = useInventoryList();
+  const { items: foods, usingMockFallback } = data;
+
+  // Pillar 4: Zustand for UI state only
+  const filter = useDashboardUIStore((s) => s.filter);
+  const setFilter = useDashboardUIStore((s) => s.setFilter);
+
   const reduceMotion = useReducedMotion();
   const hasAuth = useAuthHint();
   const addFoodHref = getProtectedHref("/foods/new", hasAuth);
@@ -74,17 +92,9 @@ export function DigitalFridgeDashboard() {
   }, [foods]);
 
   const visibleFoods = useMemo(() => {
-    return sortedFoods.filter((food) => {
-      if (filter === "all") return true;
-      if (filter === "safe") return food.status === "fresh";
-      if (filter === "check") {
-        return (
-          food.status === "check_before_use" ||
-          food.status === "not_recommended"
-        );
-      }
-      return food.status === "use_soon";
-    });
+    return sortedFoods.filter((food) =>
+      matchesDashboardFilter(food.status, filter)
+    );
   }, [filter, sortedFoods]);
 
   const stats = useMemo(() => {
@@ -102,199 +112,125 @@ export function DigitalFridgeDashboard() {
     [sortedFoods]
   );
 
-  if (isLoading) {
-    return (
-      <section className="scroll-mt-20 bg-card py-12 sm:py-16" id="digital-fridge">
-        <DashboardShell>
-          <LoadingState
-            description="Đang tải danh sách thực phẩm và trạng thái khuyến nghị."
-            title="Đang mở tủ lạnh số"
-          />
-        </DashboardShell>
-      </section>
-    );
-  }
-
-  if (isAuthRequired && foods.length === 0) {
-    return (
-      <section className="scroll-mt-20 bg-card py-12 sm:py-16" id="digital-fridge">
-        <DashboardShell>
-          <AuthRequiredState
-            description={
-              error ??
-              "Bạn cần đăng nhập để xem danh sách thực phẩm trong tủ lạnh số."
-            }
-            targetPath="/#digital-fridge"
-          />
-        </DashboardShell>
-      </section>
-    );
-  }
-
-  if (error && foods.length === 0) {
-    return (
-      <section className="scroll-mt-20 bg-card py-12 sm:py-16" id="digital-fridge">
-        <DashboardShell>
-          <ErrorState
-            description="Không tải được dữ liệu từ API hoặc mock adapter."
-            onRetry={refresh}
-            title="Chưa tải được tủ lạnh số"
-          />
-        </DashboardShell>
-      </section>
-    );
-  }
-
   return (
-    <section className="scroll-mt-20 bg-card py-12 sm:py-16" id="digital-fridge">
-      <DashboardShell>
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-          <div className="max-w-3xl">
-            <p className="text-sm font-semibold uppercase tracking-[0.14em] text-primary">
-              Dashboard
-            </p>
-            <h2 className="mt-3 text-3xl font-semibold leading-tight tracking-normal sm:text-4xl">
-              Tủ lạnh số
-            </h2>
-            <p className="mt-4 text-base leading-7 text-muted-foreground sm:text-lg">
-              Theo dõi thực phẩm đã mở nắp và biết món nào nên dùng trước.
-            </p>
-          </div>
-          <Button asChild className="h-12 rounded-2xl px-5 text-base">
-            <Link href={addFoodHref}>
-              <Plus aria-hidden={true} className="size-4" />
-              Thêm thực phẩm
-            </Link>
-          </Button>
+    <DashboardShell>
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+        <div className="max-w-3xl">
+          <p className="text-sm font-semibold uppercase tracking-[0.14em] text-primary">
+            Dashboard
+          </p>
+          <h2 className="mt-3 text-3xl font-semibold leading-tight tracking-normal sm:text-4xl">
+            Tủ lạnh số
+          </h2>
+          <p className="mt-4 text-base leading-7 text-muted-foreground sm:text-lg">
+            Theo dõi thực phẩm đã mở nắp và biết món nào nên dùng trước.
+          </p>
         </div>
+        <Button asChild className="h-12 rounded-2xl px-5 text-base">
+          <Link href={addFoodHref}>
+            <Plus aria-hidden={true} className="size-4" />
+            Thêm thực phẩm
+          </Link>
+        </Button>
+      </div>
 
-        {usingMockFallback ? (
-          <div className="mt-6 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm leading-6 text-amber-950">
-            Backend chưa có endpoint inventory, dashboard đang dùng mock adapter
-            tách riêng từ service layer.
-          </div>
-        ) : null}
-
-        {error ? (
-          <div className="mt-4 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm leading-6 text-amber-950">
-            API thật chưa phản hồi, Bếp An Tâm đang hiển thị dữ liệu mẫu để demo.
-          </div>
-        ) : null}
-
-        <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <StatCard
-            icon={Refrigerator}
-            label="Tổng số món"
-            value={stats.total}
-          />
-          <StatCard
-            icon={Sparkles}
-            label="Nên dùng sớm"
-            tone="amber"
-            value={stats.useSoon}
-          />
-          <StatCard
-            icon={SearchCheck}
-            label="Cần kiểm tra kỹ"
-            tone="orange"
-            value={stats.check}
-          />
-          <StatCard
-            icon={ClipboardCheck}
-            label="Còn trong thời gian khuyến nghị"
-            tone="emerald"
-            value={stats.safe}
-          />
+      {usingMockFallback ? (
+        <div className="mt-6 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm leading-6 text-amber-950">
+          Backend chưa có endpoint inventory, dashboard đang dùng mock adapter
+          tách riêng từ service layer.
         </div>
+      ) : null}
 
-        <div className="mt-8 grid gap-5 lg:grid-cols-[1fr_20rem]">
-          <SectionCard
-            action={
-              <Tabs
-                className="w-full sm:w-auto"
-                onValueChange={(value: string) => setFilter(value as FilterValue)}
-                value={filter}
-              >
-                <TabsList className="h-auto w-full flex-wrap justify-start gap-2 rounded-full p-2 sm:w-auto">
-                  {filterOptions.map((option) => (
-                    <TabsTrigger
-                      className="min-h-11 flex-none rounded-full px-5 text-sm font-medium"
-                      key={option.value}
-                      value={option.value}
-                    >
-                      {option.label}
-                    </TabsTrigger>
-                  ))}
-                </TabsList>
-              </Tabs>
-            }
-            description="Danh sách được sắp xếp theo mức ưu tiên: không nên để quá lâu, cần kiểm tra, nên dùng sớm, rồi còn ổn."
-            eyebrow="Danh sách ưu tiên"
-            title="Món nên xem trước hôm nay"
-          >
-            {foods.length === 0 ? (
-              <EmptyState
-                description="Khi bạn thêm thực phẩm, các món sẽ xuất hiện trong tủ lạnh số."
-                title="Tủ lạnh số đang trống"
-              />
-            ) : visibleFoods.length === 0 ? (
-              <EmptyState
-                description="Không có món nào trong bộ lọc hiện tại."
-                title="Không có món phù hợp"
-              />
-            ) : (
-              <div className="grid gap-4">
-                {visibleFoods.map((food, index) => (
-                  <FoodCard
-                    food={food}
-                    hasAuth={hasAuth}
-                    index={index}
-                    key={food.id}
-                    reduceMotion={reduceMotion}
-                  />
+      <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <StatCard
+          icon={Refrigerator}
+          label="Tổng số món"
+          value={stats.total}
+        />
+        <StatCard
+          icon={Sparkles}
+          label="Nên dùng sớm"
+          tone="amber"
+          value={stats.useSoon}
+        />
+        <StatCard
+          icon={SearchCheck}
+          label="Cần kiểm tra kỹ"
+          tone="orange"
+          value={stats.check}
+        />
+        <StatCard
+          icon={ClipboardCheck}
+          label="Còn trong thời gian khuyến nghị"
+          tone="emerald"
+          value={stats.safe}
+        />
+      </div>
+
+      <div className="mt-8 grid gap-5 lg:grid-cols-[1fr_20rem]">
+        <SectionCard
+          action={
+            <Tabs
+              className="w-full sm:w-auto"
+              onValueChange={(value: string) =>
+                setFilter(value as DashboardFilterValue)
+              }
+              value={filter}
+            >
+              <TabsList className="h-auto w-full flex-wrap justify-start gap-2 rounded-full p-2 sm:w-auto">
+                {DASHBOARD_FILTER_OPTIONS.map((option) => (
+                  <TabsTrigger
+                    className="min-h-11 flex-none rounded-full px-5 text-sm font-medium"
+                    key={option.value}
+                    value={option.value}
+                  >
+                    {option.label}
+                  </TabsTrigger>
                 ))}
-              </div>
-            )}
-          </SectionCard>
+              </TabsList>
+            </Tabs>
+          }
+          description="Danh sách được sắp xếp theo mức ưu tiên: không nên để quá lâu, cần kiểm tra, nên dùng sớm, rồi còn ổn."
+          eyebrow="Danh sách ưu tiên"
+          title="Món nên xem trước hôm nay"
+        >
+          {foods.length === 0 ? (
+            <EmptyState
+              description="Khi bạn thêm thực phẩm, các món sẽ xuất hiện trong tủ lạnh số."
+              title="Tủ lạnh số đang trống"
+            />
+          ) : visibleFoods.length === 0 ? (
+            <EmptyState
+              description="Không có món nào trong bộ lọc hiện tại."
+              title="Không có món phù hợp"
+            />
+          ) : (
+            <div className="grid gap-4">
+              {visibleFoods.map((food, index) => (
+                <FoodCard
+                  food={food}
+                  hasAuth={hasAuth}
+                  index={index}
+                  key={food.id}
+                  reduceMotion={reduceMotion}
+                />
+              ))}
+            </div>
+          )}
+        </SectionCard>
 
-          <ReminderPreview
-            priorityCount={stats.priority}
-            priorityFood={priorityFoods[0]}
-          />
-        </div>
-      </DashboardShell>
-    </section>
+        <ReminderPreview
+          priorityCount={stats.priority}
+          priorityFood={priorityFoods[0]}
+        />
+      </div>
+    </DashboardShell>
   );
 }
 
 function DashboardShell({ children }: { children: ReactNode }) {
   return (
     <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">{children}</div>
-  );
-}
-
-function AuthRequiredState({
-  description,
-  targetPath,
-}: {
-  description: string;
-  targetPath: string;
-}) {
-  return (
-    <div className="rounded-3xl border border-amber-200 bg-amber-50/60 px-5 py-10 text-center shadow-sm sm:px-8">
-      <div className="mx-auto mb-4 flex size-12 items-center justify-center rounded-2xl bg-accent text-accent-foreground">
-        <Lock aria-hidden={true} className="size-5" />
-      </div>
-      <h2 className="font-heading text-lg font-semibold text-foreground">
-        Cần đăng nhập để xem tủ lạnh số
-      </h2>
-      <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-muted-foreground">
-        {description}
-      </p>
-      <Button asChild className="mt-5 rounded-2xl">
-        <Link href={getAuthRequiredHref(targetPath)}>Đăng nhập</Link>
-      </Button>
-    </div>
   );
 }
 

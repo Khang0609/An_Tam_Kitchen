@@ -1,23 +1,25 @@
 "use client";
 
-import { FoodStatusBadge, LoadingState } from "@/components/foundation";
-import { useFoods } from "@/hooks/use-foods";
+import { Suspense } from "react";
+import { FoodStatusBadge, FoodInventoryPanelSkeleton } from "@/components/foundation";
+import { useInventoryList } from "@/hooks/queries/use-inventory-list";
 
 export function FoodInventoryPanel() {
-  const { foods, isLoading, error, usingMockFallback, refresh } = useFoods();
+  return (
+    <Suspense
+      fallback={<FoodInventoryPanelSkeleton />}
+    >
+      <FoodInventoryPanelContent />
+    </Suspense>
+  );
+}
 
-  if (isLoading) {
-    return <LoadingState description="Đang tải danh sách thực phẩm." />;
-  }
+function FoodInventoryPanelContent() {
+  const { data } = useInventoryList();
+  const { items: foods, usingMockFallback } = data;
 
   return (
     <div className="rounded-lg border border-[#e7ecdf] bg-white p-5 text-[#1d271f]">
-      {error ? (
-        <div className="mb-4 rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
-          Chưa tải được dữ liệu từ API thật. Đang dùng dữ liệu mẫu tách riêng.
-        </div>
-      ) : null}
-
       {usingMockFallback ? (
         <div className="mb-4 rounded-md border border-[#dfe9d0] bg-[#f7faf2] px-4 py-3 text-sm text-[#526055]">
           Dữ liệu hiện tại là mock fallback cho tới khi backend có endpoint
@@ -42,14 +44,6 @@ export function FoodInventoryPanel() {
           </div>
         ))}
       </div>
-
-      <button
-        className="mt-4 inline-flex h-10 items-center justify-center rounded-md border border-[#cdbf9f] bg-white px-4 text-sm font-semibold text-[#23402d] transition hover:border-[#9eb585] hover:bg-[#f7f0df]"
-        onClick={refresh}
-        type="button"
-      >
-        Tải lại
-      </button>
     </div>
   );
 }
