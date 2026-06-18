@@ -44,6 +44,21 @@ export async function login(email: string, password: string) {
   return res.json();
 }
 
+export async function guestLogin() {
+  const res = await fetch(`${API_URL}/api/auth/guest`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
+  });
+
+  if (!res.ok) {
+    const data = await res.json();
+    throw new Error(data.error || "Guest login failed");
+  }
+
+  return res.json();
+}
+
 export async function logout() {
   const res = await fetch(`${API_URL}/api/auth/logout`, {
     method: "POST",

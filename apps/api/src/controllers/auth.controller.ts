@@ -233,6 +233,6 @@ export const guestLogin = async (req: Request, res: Response): Promise<any> => {
     return res.status(200).json({ message: "Đăng nhập với tư cách khách thành công", user: { name: user.name, isGuest: true } });
   } catch (error) {
     console.error("Guest login error:", error);
-    return res.status(500).json({ error: "Internal server error" });
+    return res.status(500).json({ error: "Internal server error: " + (error instanceof Error ? error.message : String(error)) });
   }
 };

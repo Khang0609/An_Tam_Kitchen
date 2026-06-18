@@ -10,6 +10,7 @@ export type AuthUserHint = {
   id?: string;
   name?: string;
   email?: string;
+  isGuest?: boolean;
 };
 
 function canUseLocalStorage() {
