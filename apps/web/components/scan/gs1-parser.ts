@@ -32,7 +32,7 @@ export interface FoodAIs {
  */
 export function parseFoodAIs(rawCode: string): FoodAIs {
   const result: FoodAIs = {};
-  let code = rawCode.replace(/[()\s]/g, '');
+  const code = rawCode.replace(/[()\s]/g, '');
 
   // Parse AI 15 - Best Before Date (YYMMDD)
   const ai15Match = code.match(/15(\d{6})/);
