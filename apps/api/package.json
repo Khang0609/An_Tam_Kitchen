@@ -6,7 +6,7 @@
   "main": "dist/index.js",
   "packageManager": "pnpm@9.15.4",
   "scripts": {
-    "build": "prisma generate --schema=../../packages/database/prisma/schema.prisma && tsc && tsc-alias",
+    "build": "prisma generate --schema=../../packages/database/prisma/schema.prisma && tsc",
     "dev": "tsx watch src/index.ts",
     "start": "tsx src/index.ts",
     "test": "vitest"
@@ -36,7 +36,6 @@
     "@types/supertest": "^7.2.0",
     "prisma": "catalog:",
     "supertest": "^7.2.2",
-    "tsc-alias": "^1.8.16",
     "tsx": "^4.21.0",
     "typescript": "catalog:",
     "vitest": "^4.1.5"
