@@ -1,16 +1,20 @@
 {
+  "name": "an-tam-kitchen-root",
   "packageManager": "pnpm@9.15.4",
   "engines": {
     "node": ">=22"
   },
   "devDependencies": {
+    "@manypkg/cli": "^0.25.1",
     "pnpm": "9.15.4",
     "turbo": "^2.9.6"
   },
   "scripts": {
     "dev": "turbo run dev",
     "build": "turbo run build",
-    "lint": "turbo run lint"
+    "lint": "turbo run lint",
+    "manypkg:check": "manypkg check",
+    "manypkg:fix": "manypkg fix"
   },
   "pnpm": {
     "onlyBuiltDependencies": [
@@ -21,6 +25,10 @@
       "prisma",
       "sharp",
       "unrs-resolver"
-    ]
+    ],
+    "overrides": {
+      "@types/express": "^5.0.6",
+      "@types/express-serve-static-core": "^5.1.1"
+    }
   }
 }

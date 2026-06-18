@@ -4,10 +4,14 @@
     "outDir": "dist",
     "rootDir": "src",
     "noEmit": false,
-    "moduleResolution": "node16",
-    "resolveJsonModule": true,
-    "paths": {
-      "@/*": ["./src/*"]
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": false,
+    "resolveJsonModule": true
+  },
+  "tsc-alias": {
+    "resolveExtensions": {
+      "utils": ["js"]
     }
   },
   "include": ["src/**/*"],

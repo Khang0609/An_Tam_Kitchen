@@ -62,3 +62,32 @@ export async function getProductById(
     return null;
   }
 }
+
+/**
+ * Tìm kiếm sản phẩm theo mã vạch (barcode/GTIN).
+ */
+export async function getProductByBarcode(
+  barcode: string,
+  options: { signal?: AbortSignal } = {}
+): Promise<Product | null> {
+  try {
+    const payload = await apiRequest<unknown>(
+      `${FOOD_API_ENDPOINTS.listProducts}?barcode=${encodeURIComponent(barcode)}`,
+      {
+        method: "GET",
+        signal: options.signal,
+      }
+    );
+    // Nếu API trả về cấu trúc bọc: { data: Product } hoặc trả thẳng Product
+    if (payload && typeof payload === "object") {
+      if ("data" in payload) {
+        return payload.data as Product;
+      }
+      return payload as Product;
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
+

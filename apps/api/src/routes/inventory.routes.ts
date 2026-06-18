@@ -1,13 +1,13 @@
 import express, { Router } from 'express';
-import { inventoryController } from '../container.js';
-import { authenticate } from '../middleware/auth.middleware.js';
+import { inventoryController } from '../container';
+import { authenticate } from '../middleware/auth.middleware';
 import {
   validateBody,
   validateParams,
   CreateInventoryItemBodySchema,
   UpdateInventoryItemBodySchema,
   InventoryItemIdParamSchema,
-} from '../validation/inventory.validation.js';
+} from '../validation/inventory.validation';
 
 
 const router: Router = express.Router();

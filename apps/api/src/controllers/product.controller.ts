@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { IProductRepository } from '@repo/repositories';
-import { CreateProductBody, UpdateProductBody } from '../validation/product.validation.js';
+import { CreateProductBody, UpdateProductBody } from '../validation/product.validation';
 
 /**
  * ProductController
@@ -20,7 +20,17 @@ export class ProductController {
    */
   getAll = async (req: Request, res: Response): Promise<any> => {
     try {
-      const { global: isGlobal, ownerId } = req.query;
+      const { global: isGlobal, ownerId, barcode } = req.query;
+
+      if (typeof barcode === 'string' && barcode) {
+        const product = await this.productRepo.findByBarcode(barcode);
+        if (!product) {
+          return res
+            .status(404)
+            .json({ error: `Không tìm thấy sản phẩm với mã vạch: ${barcode}` });
+        }
+        return res.status(200).json({ data: product });
+      }
 
       let products;
       if (isGlobal === 'true') {

@@ -21,6 +21,9 @@ import { useRouter } from "next/navigation";
 import { useState, useMemo } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { z } from "zod";
+import { BarcodeScannerModal } from "@/components/scan/barcode-scanner-modal";
+import { parseFoodAIs } from "@/components/scan/gs1-parser";
+import { getProductByBarcode } from "@/lib/api/products";
 import { FormFieldShell } from "@/components/foundation";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -121,11 +124,11 @@ export function AddFoodForm() {
   // Các state quản lý luồng Search before Create
   const [step, setStep] = useState<"search" | "results" | "form">("search");
   const [searchQuery, setSearchQuery] = useState("");
-  const [isScanning, setIsScanning] = useState(false);
+  const [isScanning, setIsScanning] = useState(false); // mock scanner modal
+  const [scannerOpen, setScannerOpen] = useState(false); // real camera scanner modal
   const [selectedProduct, setSelectedProduct] = useState<CatalogProduct | null>(null);
   const [isFallbackMode, setIsFallbackMode] = useState(false);
   const [scanSuccessMessage, setScanSuccessMessage] = useState<string | null>(null);
-
   const {
     control,
     formState: { errors, isSubmitting },
@@ -134,6 +137,7 @@ export function AddFoodForm() {
     reset,
     setError,
     setValue,
+    getValues,
   } = useForm<AddFoodFormValues>({
     defaultValues,
     resolver: standardSchemaResolver(addFoodFormSchema),
@@ -193,7 +197,7 @@ export function AddFoodForm() {
   // Giả lập quét Barcode
   const handleSimulateScan = (product: CatalogProduct) => {
     playBeepSound();
-    setScanSuccessMessage(`Đã quét mã vạch: ${product.name} (${product.barcode})`);
+    setScanSuccessMessage(`Đã quét mã vạch (giả lập): ${product.name} (${product.barcode})`);
     setIsScanning(false);
     setSelectedProduct(product);
     setIsFallbackMode(false);
@@ -206,6 +210,73 @@ export function AddFoodForm() {
     setStep("form");
   };
 
+  // Quét Barcode thực tế (Camera)
+  const handleBarcodeDetected = async (gtin: string, rawCode: string) => {
+    setScannerOpen(false);
+    try {
+      const product = await getProductByBarcode(gtin);
+      if (product) {
+        // Ánh xạ danh mục từ Backend (FoodCategory) sang Frontend (AddFoodCategory)
+        const categoryMap: Record<string, string> = {
+          dairy: "milk",
+          sauces_spices: "sauce",
+          drinks: "drink",
+        };
+        const mappedCategory = categoryMap[product.category] || "other";
+
+        setSelectedProduct({
+          id: product.id || "scanned",
+          name: product.name,
+          category: mappedCategory as AddFoodCategory,
+          storageLocation: "fridge",
+          barcode: gtin,
+          company: "",
+        });
+        setIsFallbackMode(false);
+        setScanSuccessMessage(`Đã quét mã vạch: ${product.name} (${gtin})`);
+
+        reset({
+          ...defaultValues,
+          name: product.name,
+          category: mappedCategory,
+          storageLocation: "fridge",
+          openedAt: maxDate,
+        });
+
+        // Parse AI từ rawCode
+        const foodAIs = parseFoodAIs(rawCode);
+
+        if (foodAIs.expiryDate) {
+          setValue("expiryDate", foodAIs.expiryDate, { shouldValidate: true });
+        }
+
+        if (foodAIs.lot || foodAIs.weight) {
+          const currentNotes = getValues("notes") || "";
+          let newNotes = currentNotes;
+
+          if (foodAIs.lot) {
+            newNotes += `\nLô: ${foodAIs.lot}`;
+          }
+          if (foodAIs.weight) {
+            newNotes += `\nKL: ${foodAIs.weight}`;
+          }
+
+          newNotes = newNotes.trim();
+          setValue("notes", newNotes, { shouldValidate: true });
+        }
+
+        playBeepSound();
+        setStep("form");
+      } else {
+        playBeepSound();
+        setScanSuccessMessage(`Quét mã vạch thành công: ${gtin} (Sản phẩm mới)`);
+        triggerFallbackMode(`Sản phẩm mã ${gtin}`);
+      }
+    } catch (error) {
+      console.error("Lỗi tìm sản phẩm:", error);
+      alert("Có lỗi khi tra cứu sản phẩm. Vui lòng thử lại sau.");
+    }
+  };
   async function onSubmit(values: AddFoodFormValues) {
     const category = toAddFoodCategory(values.category);
     const storageLocation = toAddFoodStorageLocation(values.storageLocation);
@@ -303,7 +374,7 @@ export function AddFoodForm() {
               
               <Button
                 type="button"
-                onClick={() => setIsScanning(true)}
+                onClick={() => setScannerOpen(true)}
                 className="h-13 rounded-2xl px-5 gap-2 shrink-0 shadow-sm"
                 variant="outline"
               >
@@ -314,9 +385,19 @@ export function AddFoodForm() {
 
             {/* Gợi ý nhanh */}
             <div className="mt-8 text-left">
-              <span className="text-xs font-semibold uppercase tracking-[0.08em] text-muted-foreground block mb-3">
-                Gợi ý tìm kiếm phổ biến
-              </span>
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-xs font-semibold uppercase tracking-[0.08em] text-muted-foreground block">
+                  Gợi ý tìm kiếm phổ biến
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setIsScanning(true)}
+                  className="text-xs text-primary hover:underline flex items-center gap-1 font-medium"
+                >
+                  <Sparkles className="size-3 text-amber-500" />
+                  Mô phỏng quét (Demo)
+                </button>
+              </div>
               <div className="flex flex-wrap gap-2">
                 {MOCK_CATALOG_PRODUCTS.slice(0, 4).map((p) => (
                   <button
@@ -691,6 +772,12 @@ export function AddFoodForm() {
           </div>
         </div>
       )}
+
+      <BarcodeScannerModal
+        open={scannerOpen}
+        onOpenChange={setScannerOpen}
+        onDetected={handleBarcodeDetected}
+      />
     </div>
   );
 }
