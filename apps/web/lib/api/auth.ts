@@ -9,6 +9,7 @@ export type AuthApiUser = {
   id?: string;
   name?: string;
   email?: string;
+  isGuest?: boolean;
 };
 
 export async function signup(name: string, email: string, password: string) {
@@ -68,6 +69,10 @@ export function getUserFromAuthResponse(payload: unknown): AuthApiUser | null {
 
   if (typeof candidate.email === "string" && candidate.email.trim()) {
     user.email = candidate.email.trim();
+  }
+
+  if (typeof candidate.isGuest === "boolean") {
+    user.isGuest = candidate.isGuest;
   }
 
   return Object.keys(user).length > 0 ? user : null;

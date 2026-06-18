@@ -10,6 +10,7 @@ export type AuthUserHint = {
   id?: string;
   name?: string;
   email?: string;
+  isGuest?: boolean;
 };
 
 function canUseLocalStorage() {
@@ -164,6 +165,10 @@ function normalizeAuthUserHint(user: unknown): AuthUserHint | null {
 
   if (typeof record.email === "string" && record.email.trim()) {
     normalizedUser.email = record.email.trim();
+  }
+
+  if (typeof record.isGuest === "boolean") {
+    normalizedUser.isGuest = record.isGuest;
   }
 
   return Object.keys(normalizedUser).length > 0 ? normalizedUser : null;

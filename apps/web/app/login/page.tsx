@@ -81,7 +81,7 @@ export default function LoginPage() {
       setAuthHint(
         getUserFromAuthResponse(loginPayload) ??
           (isGuest
-            ? { email: loginEmail, name: "Tài khoản khách" }
+            ? { email: loginEmail, name: "Tài khoản khách", isGuest: true }
             : { email: loginEmail })
       );
       setMessage("Đăng nhập thành công! Đang chuyển tiếp...");
