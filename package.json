@@ -25,6 +25,10 @@
       "prisma",
       "sharp",
       "unrs-resolver"
-    ]
+    ],
+    "overrides": {
+      "@types/express": "^5.0.6",
+      "@types/express-serve-static-core": "^5.1.1"
+    }
   }
 }
