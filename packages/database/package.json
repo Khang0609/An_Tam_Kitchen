@@ -18,9 +18,9 @@
     "db:studio": "prisma studio"
   },
   "dependencies": {
-    "@prisma/adapter-pg": "catalog:",
-    "@prisma/client": "catalog:",
-    "@prisma/config": "catalog:",
+    "@prisma/adapter-pg": "^7.8.0",
+    "@prisma/client": "^7.8.0",
+    "@prisma/config": "^7.8.0",
     "@repo/types": "workspace:*",
     "dotenv": "catalog:",
     "pg": "^8.20.0",
