@@ -204,11 +204,7 @@ export function AddFoodForm() {
                     <SelectValue placeholder="Chọn nhóm" />
                   </SelectTrigger>
                   <SelectContent>
-                    {CATEGORY_OPTIONS.map((option) => (
-                      <SelectItem key={option.value} value={option.value}>
-                        {option.label}
-                      </SelectItem>
-                    ))}
+
                   </SelectContent>
                 </Select>
               </FormFieldShell>
