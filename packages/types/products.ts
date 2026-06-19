@@ -1,65 +1,87 @@
 import { z } from 'zod';
 
 /**
- * Danh mục thực phẩm
+ * Represents a product Category (e.g., Dairy, Meat & Poultry).
+ * Serves as a grouping mechanism and provides default fallback indicators for spoilage.
  */
-export const FoodCategoryEnum = z.enum([
-  'dairy',         // Sữa và các sản phẩm từ sữa
-  'meat_poultry',  // Thịt và gia cầm
-  'seafood',       // Hải sản
-  'vegetables',    // Rau củ
-  'fruits',        // Trái cây
-  'eggs',          // Trứng
-  'sauces_spices', // Gia vị và nước sốt
-  'drinks',        // Đồ uống
-  'frozen_food',   // Thực phẩm đông lạnh
-  'snacks',        // Đồ ăn vặt
-  'others'         // Khác
-]);
+export const CategorySchema = z.object({
+  /** Unique identifier for the category (UUID string) */
+  id: z.uuidv7(),
 
-export type FoodCategory = z.infer<typeof FoodCategoryEnum>;
+  /** Name of the category */
+  name: z.string().min(1, "Tên danh mục là bắt buộc"),
+
+  /**
+   * Optional fallback description of indicators that a product in this category has spoiled
+   * (e.g., "Check for mold, sour odor, or curdling").
+   */
+  defaultSpoiledSign: z.string().optional(),
+});
+
+export type Category = z.infer<typeof CategorySchema>;
+
+/**
+ * Danh mục thực phẩm (Alias giữ để không bị lỗi import từ các file bên ngoài)
+ */
+export const FoodCategoryEnum = CategorySchema;
+export type FoodCategory = Category;
 
 /**
  * Zod schema cho dữ liệu Sản phẩm (Cả hệ thống và người dùng tạo)
+ * Được đồng bộ hoàn toàn với cấu trúc database và domain model chuẩn
  */
 export const ProductSchema = z.object({
-  /** ID duy nhất (uuidv7) */
+  /** Unique identifier for the product (UUID string) */
   id: z.uuidv7(),
 
-  /** Tên sản phẩm */
+  /** Reference to the category this product belongs to (UUID string) */
+  categoryId: z.uuidv7(),
+
+  /** Reference to the company manufacturing this product (UUID string) */
+  companyId: z.uuidv7(),
+
+  /** Name of the product */
   name: z.string().min(1, "Tên sản phẩm là bắt buộc"),
-  
-  /** Công ty/Nhà sản xuất */
-  company: z.string().min(1, "Tên công ty là bắt buộc"),
 
-  /** Mã vạch (nếu có) */
-  barcode: z.string().optional(),
+  /** Unique barcode number (EAN-13, UPC, etc.) */
+  barcode: z.string(),
 
-  /** Danh mục sản phẩm */
-  category: FoodCategoryEnum.default('others'),
-
-  /** URL hình ảnh sản phẩm */
-  imageUrl: z.url().optional(),
-
-  // --- Quản lý nguồn gốc sản phẩm ---
-  /** 
-   * ID người tạo. 
-   * null/undefined: Sản phẩm hệ thống (Global)
-   * string: Sản phẩm riêng của người dùng
+  /**
+   * The default shelf life duration in days for the product when unopened.
+   * Typically used to calculate expiration date from manufacture/purchase date.
    */
-  ownerId: z.string().nullable().optional(),
+  shelfLifeUnopenedDays: z.number().int().min(0, "Số ngày không được âm"),
 
-  /** 
-   * Đánh dấu sản phẩm đã được kiểm định và hiển thị cho tất cả mọi người 
+  /**
+   * The default shelf life duration in days for the product once opened.
+   * Used to adjust the safe consumption timeline after the item is opened.
    */
-  isGlobal: z.boolean().default(false),
-  // ----------------------------------
-  
-  /** Số ngày sử dụng trước khi mở nắp */
-  daysBeforeOpen: z.number().int().min(0, "Số ngày sử dụng trước khi mở nắp không được âm"),
-  
-  /** Số ngày sử dụng sau khi mở nắp */
-  daysAfterOpen: z.number().int().min(0, "Số ngày sử dụng sau khi mở nắp không được âm"),
+  shelfLifeOpenedDays: z.number().int().min(0, "Số ngày không được âm"),
+
+  /**
+   * The duration in days from purchase/manufacture during which the product remains completely fresh.
+   * Status is considered optimal within this period.
+   */
+  freshDays: z.number().int().min(0, "Số ngày không được âm"),
+
+  /**
+   * Safety buffer period in days before actual expiration to flag the product for early consumption
+   * (e.g., warning to "use soon").
+   */
+  earlyConsumptionDays: z.number().int().min(0, "Số ngày không được âm"),
+
+  /**
+   * Safety buffer period in days before actual expiration to warn the user to inspect the product closely
+   * (e.g., warning to "check before use").
+   */
+  checkBeforeUseDays: z.number().int().min(0, "Số ngày không được âm"),
+
+  /**
+   * Specific signs or indicators of spoilage for this product (e.g., separation, sour smell).
+   * Set to `null` if there is no product-specific indicator, in which case the system should
+   * fall back to the category's `defaultSpoiledSign`.
+   */
+  spoiledSign: z.string().nullable(),
 });
 
 /**
