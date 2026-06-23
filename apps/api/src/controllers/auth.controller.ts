@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import argon2 from "argon2";
 import jwt from "jsonwebtoken";
-import { userRepository } from "@/container";
+import { userRepository } from "../container";
 import { UserSchema } from "@repo/types";
 import { z } from "zod";
 
@@ -233,6 +233,6 @@ export const guestLogin = async (req: Request, res: Response): Promise<any> => {
     return res.status(200).json({ message: "Đăng nhập với tư cách khách thành công", user: { name: user.name, isGuest: true } });
   } catch (error) {
     console.error("Guest login error:", error);
-    return res.status(500).json({ error: "Internal server error" });
+    return res.status(500).json({ error: "Internal server error: " + (error instanceof Error ? error.message : String(error)) });
   }
 };

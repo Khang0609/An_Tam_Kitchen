@@ -112,6 +112,9 @@ export const ProductSchema = z.object({
   // Legacy fields for backward compatibility
   daysBeforeOpen: z.number().int().min(0).optional(),
   daysAfterOpen: z.number().int().min(0).optional(),
+  company: z.any().optional(),
+  category: z.any().optional(),
+  isGlobal: z.boolean().optional(),
 });
 
 /**

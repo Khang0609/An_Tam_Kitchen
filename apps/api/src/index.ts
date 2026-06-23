@@ -2,14 +2,15 @@ import express, { Application } from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import cookieParser from 'cookie-parser';
-import authRoutes from '@/routes/auth.routes';
-import productRoutes from '@/routes/product.routes';
-import inventoryRoutes from '@/routes/inventory.routes';
-import userProductRoutes from '@/routes/user-product.routes';
+import authRoutes from './routes/auth.routes';
+import productRoutes from './routes/product.routes';
+import inventoryRoutes from './routes/inventory.routes';
+import userProductRoutes from './routes/user-product.routes';
 
 dotenv.config();
 
 const app: Application = express();
+app.set('trust proxy', 1);
 const port = process.env.PORT || 3001;
 
 // ─── CORS ────────────────────────────────────────────────────────────────────

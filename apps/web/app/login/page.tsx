@@ -1,19 +1,8 @@
 "use client";
 
-import {
-  AlertCircle,
-  CheckCircle2,
-  Leaf,
-  Loader2,
-  Lock,
-  Mail,
-  UserRound,
-} from "lucide-react";
+import { Leaf } from "lucide-react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useState, useSyncExternalStore } from "react";
 import { AppHeader } from "@/components/foundation";
-import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -22,100 +11,25 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { getUserFromAuthResponse, login } from "@/lib/api/auth";
-import { getSafeNextPath, setAuthHint } from "@/lib/auth-session";
-
-const GUEST_EMAIL = "guest@antam.local";
-const GUEST_PASSWORD = "Guest@123456";
-
-function subscribeToLocationSearch() {
-  return () => {};
-}
-
-function getLocationSearchSnapshot() {
-  return window.location.search;
-}
-
-function getServerLocationSearchSnapshot() {
-  return "";
-}
+import { useLogin } from "./use-login";
+import { LoginForm } from "./components/login-form";
+import { GuestLogin } from "./components/guest-login";
 
 export default function LoginPage() {
-  const router = useRouter();
-  const locationSearch = useSyncExternalStore(
-    subscribeToLocationSearch,
-    getLocationSearchSnapshot,
-    getServerLocationSearchSnapshot
-  );
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-  const [isGuestLoading, setIsGuestLoading] = useState(false);
-  const [message, setMessage] = useState("");
-  const [error, setError] = useState("");
-  const searchParams = new URLSearchParams(locationSearch);
-  const safeNext = getSafeNextPath(searchParams.get("next"));
-  const authRequiredMessage =
-    searchParams.get("reason") === "auth-required"
-      ? "Bạn cần đăng nhập để sử dụng tính năng này."
-      : "";
-
-  async function handleLogin(
-    loginEmail: string,
-    loginPassword: string,
-    isGuest = false
-  ) {
-    setMessage("");
-    setError("");
-
-    if (isGuest) {
-      setIsGuestLoading(true);
-    } else {
-      setIsLoading(true);
-    }
-
-    try {
-      const loginPayload = await login(loginEmail, loginPassword);
-      setAuthHint(
-        getUserFromAuthResponse(loginPayload) ??
-          (isGuest
-            ? { email: loginEmail, name: "Tài khoản khách", isGuest: true }
-            : { email: loginEmail })
-      );
-      setMessage("Đăng nhập thành công! Đang chuyển tiếp...");
-      setTimeout(() => {
-        router.push(safeNext ?? "/");
-      }, 1000);
-    } catch (err) {
-      if (isGuest) {
-        setError(
-          "Tài khoản khách chưa được bật trên backend. Vui lòng chạy seed guest hoặc thử lại sau."
-        );
-      } else {
-        const errorMessage =
-          err instanceof Error
-            ? err.message
-            : "Đăng nhập thất bại. Vui lòng kiểm tra lại email/mật khẩu.";
-        setError(errorMessage);
-      }
-    } finally {
-      setIsLoading(false);
-      setIsGuestLoading(false);
-    }
-  }
-
-  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    handleLogin(email, password);
-  }
-
-  function handleGuestLogin() {
-    handleLogin(GUEST_EMAIL, GUEST_PASSWORD, true);
-  }
-
-  const anyLoading = isLoading || isGuestLoading;
+  const {
+    email,
+    setEmail,
+    password,
+    setPassword,
+    isLoading,
+    isGuestLoading,
+    anyLoading,
+    message,
+    error,
+    authRequiredMessage,
+    handleSubmit,
+    handleGuestLogin,
+  } = useLogin();
 
   return (
     <div className="flex min-h-dvh flex-col bg-background">
@@ -146,83 +60,18 @@ export default function LoginPage() {
             </CardHeader>
 
             <CardContent>
-              <form
-                className="space-y-4"
-                id="login-form"
+              <LoginForm
+                anyLoading={anyLoading}
+                authRequiredMessage={authRequiredMessage}
+                email={email}
+                error={error}
+                isLoading={isLoading}
+                message={message}
                 onSubmit={handleSubmit}
-              >
-                <div className="space-y-1.5">
-                  <Label htmlFor="login-email">
-                    <Mail className="size-3.5 text-muted-foreground" />
-                    Email
-                  </Label>
-                  <Input
-                    autoComplete="email"
-                    disabled={anyLoading}
-                    id="login-email"
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="email@example.com"
-                    required
-                    type="email"
-                    value={email}
-                  />
-                </div>
-
-                <div className="space-y-1.5">
-                  <div className="flex items-center justify-between">
-                    <Label htmlFor="login-password">
-                      <Lock className="size-3.5 text-muted-foreground" />
-                      Mật khẩu
-                    </Label>
-                    <Link
-                      className="text-xs text-primary hover:underline"
-                      href="/forgot-password"
-                    >
-                      Quên mật khẩu?
-                    </Link>
-                  </div>
-                  <Input
-                    autoComplete="current-password"
-                    disabled={anyLoading}
-                    id="login-password"
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="••••••••"
-                    required
-                    type="password"
-                    value={password}
-                  />
-                </div>
-
-                {message ? (
-                  <div className="flex items-start gap-2 rounded-lg bg-accent/50 p-3 text-sm text-accent-foreground">
-                    <CheckCircle2 className="mt-0.5 size-4 shrink-0" />
-                    <span>{message}</span>
-                  </div>
-                ) : null}
-                {authRequiredMessage ? (
-                  <div className="flex items-start gap-2 rounded-lg bg-accent/50 p-3 text-sm text-accent-foreground">
-                    <Lock className="mt-0.5 size-4 shrink-0" />
-                    <span>{authRequiredMessage}</span>
-                  </div>
-                ) : null}
-                {error ? (
-                  <div className="flex items-start gap-2 rounded-lg bg-destructive/10 p-3 text-sm text-destructive">
-                    <AlertCircle className="mt-0.5 size-4 shrink-0" />
-                    <span>{error}</span>
-                  </div>
-                ) : null}
-
-                <Button className="h-9 w-full" disabled={anyLoading} type="submit">
-                  {isLoading ? (
-                    <>
-                      <Loader2 className="size-4 animate-spin" />
-                      Đang đăng nhập...
-                    </>
-                  ) : (
-                    "Đăng nhập"
-                  )}
-                </Button>
-              </form>
+                password={password}
+                setEmail={setEmail}
+                setPassword={setPassword}
+              />
             </CardContent>
 
             <CardFooter className="flex-col gap-3">
@@ -232,25 +81,11 @@ export default function LoginPage() {
                 <span className="h-px flex-1 bg-border" />
               </div>
 
-              <Button
-                className="h-9 w-full"
-                disabled={anyLoading}
+              <GuestLogin
+                anyLoading={anyLoading}
+                isGuestLoading={isGuestLoading}
                 onClick={handleGuestLogin}
-                type="button"
-                variant="secondary"
-              >
-                {isGuestLoading ? (
-                  <>
-                    <Loader2 className="size-4 animate-spin" />
-                    Đang vào...
-                  </>
-                ) : (
-                  <>
-                    <UserRound className="size-4" />
-                    Dùng tài khoản khách
-                  </>
-                )}
-              </Button>
+              />
             </CardFooter>
           </Card>
 

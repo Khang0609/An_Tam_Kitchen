@@ -7,9 +7,11 @@
     "module": "ESNext",
     "moduleResolution": "bundler",
     "allowImportingTsExtensions": false,
-    "resolveJsonModule": true,
-    "paths": {
-      "@/*": ["./src/*"]
+    "resolveJsonModule": true
+  },
+  "tsc-alias": {
+    "resolveExtensions": {
+      "utils": ["js"]
     }
   },
   "include": ["src/**/*"],
