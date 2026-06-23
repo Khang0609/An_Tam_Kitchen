@@ -13,14 +13,17 @@ function createProductFixture(overrides: Partial<Omit<Product, 'id'>> = {}): Omi
     name: 'Sữa tươi TH True Milk',
     company: 'TH Group',
     barcode: '8936001720017',
-    category: 'dairy',
+    category: 'dairy' as any,
     imageUrl: 'https://example.com/th-milk.jpg',
-    ownerId: null,
-    isGlobal: true,
-    daysBeforeOpen: 30,
-    daysAfterOpen: 7,
+    isQualified: true,
+    shelfLifeUnopenedDays: 30,
+    shelfLifeOpenedDays: 7,
+    freshDays: 3,
+    earlyConsumptionDays: 2,
+    checkBeforeUseDays: 1,
+    spoiledSign: null,
     ...overrides,
-  };
+  } as unknown as Omit<Product, 'id'>;
 }
 
 // ─── Test Suite ───────────────────────────────────────────────────────────────
@@ -43,17 +46,14 @@ describe('MockProductRepository', () => {
       expect(product.id).toBeDefined();
       expect(typeof product.id).toBe('string');
       expect(product.name).toBe(data.name);
-      expect(product.company).toBe(data.company);
-      expect(product.category).toBe('dairy');
-      expect(product.isGlobal).toBe(true);
+      expect(product.isQualified).toBe(true);
     });
 
-    it('should create a private (user-owned) product', async () => {
-      const data = createProductFixture({ ownerId: 'user_abc', isGlobal: false });
+    it('should create a custom (unqualified) product', async () => {
+      const data = createProductFixture({ isQualified: false });
       const product = await repo.create(data);
 
-      expect(product.ownerId).toBe('user_abc');
-      expect(product.isGlobal).toBe(false);
+      expect(product.isQualified).toBe(false);
     });
 
     it('should store multiple products independently', async () => {
@@ -108,14 +108,12 @@ describe('MockProductRepository', () => {
       const created = await repo.create(createProductFixture());
       const updated = await repo.update(created.id, {
         name: 'Sữa tươi có đường',
-        daysAfterOpen: 5,
+        shelfLifeOpenedDays: 5,
       });
 
       expect(updated.id).toBe(created.id);
       expect(updated.name).toBe('Sữa tươi có đường');
-      expect(updated.daysAfterOpen).toBe(5);
-      // Các field không thay đổi phải giữ nguyên
-      expect(updated.company).toBe(created.company);
+      expect(updated.shelfLifeOpenedDays).toBe(5);
     });
 
     it('should throw an error when updating a non-existent product', async () => {
@@ -164,23 +162,19 @@ describe('MockProductRepository', () => {
   // ── FIND BY OWNER ──────────────────────────────────────────────────────────
 
   describe('findByOwner()', () => {
-    it('should return only products belonging to the specified owner', async () => {
-      await repo.create(createProductFixture({ ownerId: 'user_1', name: 'User 1 Product' }));
-      await repo.create(createProductFixture({ ownerId: 'user_2', name: 'User 2 Product' }));
-      await repo.create(createProductFixture({ ownerId: null, isGlobal: true, name: 'Global' }));
-
+    it('should return empty array as products are anonymous', async () => {
+      await repo.create(createProductFixture({ name: 'User 1 Product' }));
       const user1Products = await repo.findByOwner('user_1');
-      expect(user1Products).toHaveLength(1);
-      expect(user1Products[0].name).toBe('User 1 Product');
+      expect(user1Products).toHaveLength(0);
     });
   });
 
   // ── FIND GLOBAL ────────────────────────────────────────────────────────────
 
   describe('findGlobal()', () => {
-    it('should return only global products', async () => {
-      await repo.create(createProductFixture({ isGlobal: true, name: 'Global Milk' }));
-      await repo.create(createProductFixture({ isGlobal: false, ownerId: 'user_x', name: 'Private' }));
+    it('should return only global/qualified products', async () => {
+      await repo.create(createProductFixture({ isQualified: true, name: 'Global Milk' }));
+      await repo.create(createProductFixture({ isQualified: false, name: 'Private' }));
 
       const globals = await repo.findGlobal();
       expect(globals).toHaveLength(1);
@@ -188,7 +182,7 @@ describe('MockProductRepository', () => {
     });
 
     it('should return an empty array when no global products exist', async () => {
-      await repo.create(createProductFixture({ isGlobal: false, ownerId: 'user_x' }));
+      await repo.create(createProductFixture({ isQualified: false }));
       const globals = await repo.findGlobal();
       expect(globals).toHaveLength(0);
     });

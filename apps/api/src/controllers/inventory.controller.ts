@@ -36,13 +36,12 @@ export class InventoryController {
       if (!productId && body.name && body.category) {
         const newProduct = await this.productRepo.create({
           name: body.name,
-          category: body.category as FoodCategory, // Đổi từ FoodCategory về category
+          category: body.category as any,
           company: 'Unknown',
           daysBeforeOpen: 30,
           daysAfterOpen: 7,
-          isGlobal: false,
-          ownerId: userId,
-        });
+          isQualified: false,
+        } as any);
         productId = newProduct.id;
       }
 
@@ -55,6 +54,7 @@ export class InventoryController {
 
       const newItem = await this.inventoryRepo.create({
         userId,
+        productId,
         userProductId: productId,
         displayName: body.displayName || body.name || 'Sản phẩm mới',
         openedAt: body.openedAt,
@@ -63,7 +63,7 @@ export class InventoryController {
         status: body.status || 'fresh',
         notes: body.notes,
         quantity: body.quantity,
-      });
+      } as any);
 
       return res.status(201).json({ data: newItem });
     } catch (error) {

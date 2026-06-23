@@ -2,7 +2,7 @@ import { z } from "zod";
 import {
   AddFoodCategoryEnum,
   AddFoodStorageLocationEnum,
-} from "./food-constants";
+} from "./food-constants.js";
 
 /**
  * Schema cho sản phẩm do người dùng tự định nghĩa (Custom Products)
@@ -24,7 +24,7 @@ export const UserProductSchema = z.object({
   category: AddFoodCategoryEnum,
 
   /** URL hình ảnh sản phẩm */
-  imageUrl: z.string().url().optional(),
+  imageUrl: z.url().optional(),
 
   /** Vị trí bảo quản mặc định */
   storage_location: AddFoodStorageLocationEnum,

@@ -19,20 +19,24 @@ export const ProductIdParamSchema = z.object({
  */
 export const CreateProductBodySchema = z.object({
   name: z.string().min(1, 'Tên sản phẩm là bắt buộc'),
-  company: z.string().min(1, 'Tên công ty là bắt buộc'),
-  barcode: z.string().optional(),
-  category: FoodCategoryEnum.default('others'),
-  imageUrl: z.url({ message: 'imageUrl phải là URL hợp lệ' }).optional(),
-  ownerId: z.string().nullable().optional(),
-  isGlobal: z.boolean().default(false),
-  daysBeforeOpen: z
-    .number({ error: 'daysBeforeOpen phải là số' })
-    .int()
-    .min(0, 'Số ngày trước khi mở không được âm'),
-  daysAfterOpen: z
-    .number({ error: 'daysAfterOpen phải là số' })
-    .int()
-    .min(0, 'Số ngày sau khi mở không được âm'),
+  categoryId: z.string().uuid().nullable().optional(),
+  companyId: z.string().uuid().nullable().optional(),
+  barcode: z.string().nullable().optional(),
+  shelfLifeUnopenedDays: z.number().int().min(0).optional(),
+  shelfLifeOpenedDays: z.number().int().min(0).optional(),
+  freshDays: z.number().int().min(0).optional(),
+  earlyConsumptionDays: z.number().int().min(0).optional(),
+  checkBeforeUseDays: z.number().int().min(0).optional(),
+  spoiledSign: z.string().nullable().optional(),
+  imageUrl: z.string().url().nullable().optional(),
+  storageLocation: z.enum(['fridge', 'freezer', 'room_temp']).optional(),
+  isQualified: z.boolean().optional(),
+
+  // Legacy fields for backward compatibility
+  daysBeforeOpen: z.number().int().min(0).optional(),
+  daysAfterOpen: z.number().int().min(0).optional(),
+  category: z.any().optional(),
+  company: z.string().optional(),
 });
 
 /**

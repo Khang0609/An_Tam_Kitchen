@@ -10,27 +10,26 @@ describe('Backend Repositories (Mock)', () => {
     const privateProduct = await productRepo.create({
       name: 'User Homemade Jam',
       company: 'User Kitchen',
-      ownerId: 'user_1',
-      isGlobal: false,
-      category: 'others',
+      isQualified: false,
+      category: 'others' as any,
       daysBeforeOpen: 30,
       daysAfterOpen: 7
-    });
+    } as any);
 
-    expect(privateProduct.ownerId).toBe('user_1');
-    expect(privateProduct.isGlobal).toBe(false);
+    expect(privateProduct.isQualified).toBe(false);
 
     // 2. Add to user inventory
     const item = await inventoryRepo.create({
       userId: 'user_1',
+      productId: privateProduct.id,
       userProductId: privateProduct.id,
       displayName: privateProduct.name,
       expiryDate: new Date('2026-12-31'),
       location: 'fridge',
       status: 'fresh'
-    });
+    } as any);
 
-    expect(item.userProductId).toBe(privateProduct.id);
+    expect(item.productId).toBe(privateProduct.id);
     expect(item.displayName).toBe('User Homemade Jam');
 
     // 3. Find by user
@@ -43,11 +42,11 @@ describe('Backend Repositories (Mock)', () => {
     await productRepo.create({
       name: 'Global Milk',
       company: 'Big Co',
-      isGlobal: true,
-      category: 'dairy',
+      isQualified: true,
+      category: 'dairy' as any,
       daysBeforeOpen: 10,
       daysAfterOpen: 3
-    });
+    } as any);
 
     const globals = await productRepo.findGlobal();
     expect(globals.some(p => p.name === 'Global Milk')).toBe(true);

@@ -10,13 +10,22 @@ import type { CreateFoodInput, FoodApiRecord } from "@/lib/api/types";
 const USER_ID = "0192f9a5-3c1a-7d7e-8b63-77e859c3a001";
 const MOCK_STORAGE_KEY = "bep-an-tam:mock-foods";
 
+const mockCategories: Record<string, FoodCategory> = {
+  dairy: { id: "cat-dairy", name: "Sữa và sản phẩm từ sữa", defaultSpoiledSign: "Mùi chua, kết tủa" },
+  sauces_spices: { id: "cat-sauces", name: "Gia vị và nước sốt", defaultSpoiledSign: "Mốc, đổi màu" },
+  meat_poultry: { id: "cat-meat", name: "Thịt và gia cầm", defaultSpoiledSign: "Mùi hôi, nhớt" },
+  frozen_food: { id: "cat-frozen", name: "Thực phẩm đông lạnh", defaultSpoiledSign: "Bị cháy đông" },
+  drinks: { id: "cat-drinks", name: "Đồ uống", defaultSpoiledSign: "Vẩn đục, mùi lạ" },
+  others: { id: "cat-others", name: "Khác", defaultSpoiledSign: "Biến đổi màu sắc" },
+};
+
 const categoryToFoodCategory: Record<AddFoodCategory, FoodCategory> = {
-  milk: "dairy",
-  sauce: "sauces_spices",
-  canned_food: "others",
-  sausage: "meat_poultry",
-  drink: "drinks",
-  other: "others",
+  milk: mockCategories.dairy,
+  sauce: mockCategories.sauces_spices,
+  canned_food: mockCategories.others,
+  sausage: mockCategories.meat_poultry,
+  drink: mockCategories.drinks,
+  other: mockCategories.others,
 };
 
 const storageToApiLocation: Record<AddFoodStorageLocation, StorageLocation> = {
@@ -52,7 +61,7 @@ export function getMockFoodRecords(now = new Date()): FoodApiRecord[] {
         id: "0192f9a5-3c1a-7d7e-8b63-77e859c32001",
         name: "Sữa tươi",
         company: "An Tam Demo",
-        category: "dairy",
+        category: mockCategories.dairy,
         isGlobal: true,
         daysBeforeOpen: 7,
         daysAfterOpen: 5,
@@ -75,7 +84,7 @@ export function getMockFoodRecords(now = new Date()): FoodApiRecord[] {
         id: "0192f9a5-3c1a-7d7e-8b63-77e859c32002",
         name: "Tương cà",
         company: "An Tam Demo",
-        category: "sauces_spices",
+        category: mockCategories.sauces_spices,
         isGlobal: true,
         daysBeforeOpen: 180,
         daysAfterOpen: 30,
@@ -97,7 +106,7 @@ export function getMockFoodRecords(now = new Date()): FoodApiRecord[] {
         id: "0192f9a5-3c1a-7d7e-8b63-77e859c32003",
         name: "Xúc xích",
         company: "An Tam Demo",
-        category: "meat_poultry",
+        category: mockCategories.meat_poultry,
         isGlobal: true,
         daysBeforeOpen: 10,
         daysAfterOpen: 4,
@@ -119,7 +128,7 @@ export function getMockFoodRecords(now = new Date()): FoodApiRecord[] {
         id: "0192f9a5-3c1a-7d7e-8b63-77e859c32004",
         name: "Sốt kem nấm",
         company: "An Tam Demo",
-        category: "sauces_spices",
+        category: mockCategories.sauces_spices,
         isGlobal: true,
         daysBeforeOpen: 90,
         daysAfterOpen: 6,
@@ -142,7 +151,7 @@ export function getMockFoodRecords(now = new Date()): FoodApiRecord[] {
         id: "0192f9a5-3c1a-7d7e-8b63-77e859c32005",
         name: "Đậu Hà Lan đông lạnh",
         company: "An Tam Demo",
-        category: "frozen_food",
+        category: mockCategories.frozen_food,
         isGlobal: true,
         daysBeforeOpen: 180,
         daysAfterOpen: 30,

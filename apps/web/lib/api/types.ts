@@ -36,7 +36,11 @@ export type ApiResponse<T> = {
 export type FoodProduct = Product;
 
 export type FoodApiRecord = Partial<InventoryItem> & {
-  product?: Partial<Product> | null;
+  product?: (Partial<Product> & {
+    category?: FoodCategory;
+    company?: string;
+    isGlobal?: boolean;
+  }) | null;
   productId?: string;
   product_id?: string;
   userId?: string;

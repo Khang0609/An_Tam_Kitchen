@@ -9,10 +9,26 @@ export class MockProductRepository implements IProductRepository {
   private products: Product[] = [];
 
   async create(data: Omit<Product, 'id'>): Promise<Product> {
+    const cleanData: any = { ...data };
+    const shelfLifeUnopenedDays = cleanData.shelfLifeUnopenedDays ?? cleanData.daysBeforeOpen ?? 30;
+    const shelfLifeOpenedDays = cleanData.shelfLifeOpenedDays ?? cleanData.daysAfterOpen ?? 7;
+    const freshDays = cleanData.freshDays ?? 3;
+    const earlyConsumptionDays = cleanData.earlyConsumptionDays ?? 2;
+    const checkBeforeUseDays = cleanData.checkBeforeUseDays ?? 1;
+
     const newProduct: Product = {
       ...data,
-      id: crypto.randomUUID(), // Trong thực tế Zod v4 z.uuidv7() sẽ dùng ở đây
-    } as Product;
+      id: crypto.randomUUID(),
+      shelfLifeUnopenedDays,
+      shelfLifeOpenedDays,
+      freshDays,
+      earlyConsumptionDays,
+      checkBeforeUseDays,
+      isQualified: cleanData.isQualified ?? false,
+      daysBeforeOpen: shelfLifeUnopenedDays,
+      daysAfterOpen: shelfLifeOpenedDays,
+    } as unknown as Product;
+
     this.products.push(newProduct);
     return newProduct;
   }
@@ -29,7 +45,18 @@ export class MockProductRepository implements IProductRepository {
     const index = this.products.findIndex(p => p.id === id);
     if (index === -1) throw new Error('Product not found');
     
-    this.products[index] = { ...this.products[index], ...data };
+    const cleanData: any = { ...data };
+    const shelfLifeUnopenedDays = cleanData.shelfLifeUnopenedDays ?? cleanData.daysBeforeOpen ?? this.products[index].shelfLifeUnopenedDays;
+    const shelfLifeOpenedDays = cleanData.shelfLifeOpenedDays ?? cleanData.daysAfterOpen ?? this.products[index].shelfLifeOpenedDays;
+
+    this.products[index] = {
+      ...this.products[index],
+      ...data,
+      shelfLifeUnopenedDays,
+      shelfLifeOpenedDays,
+      daysBeforeOpen: shelfLifeUnopenedDays,
+      daysAfterOpen: shelfLifeOpenedDays,
+    } as unknown as Product;
     return this.products[index];
   }
 
@@ -44,11 +71,12 @@ export class MockProductRepository implements IProductRepository {
   }
 
   async findByOwner(ownerId: string): Promise<Product[]> {
-    return this.products.filter(p => p.ownerId === ownerId);
+    // All products are anonymous
+    return [];
   }
 
   async findGlobal(): Promise<Product[]> {
-    return this.products.filter(p => p.isGlobal);
+    return this.products.filter(p => p.isQualified);
   }
 }
 
@@ -59,44 +87,74 @@ export class MockInventoryRepository implements IInventoryRepository {
   private inventory: InventoryItem[] = mockDatabase.inventory;
 
   async create(data: Omit<InventoryItem, 'id' | 'createdAt' | 'updatedAt'>): Promise<InventoryItem> {
+    const cleanData: any = { ...data };
+    const productId = cleanData.productId ?? cleanData.userProductId;
+
     const newItem: InventoryItem = {
       ...data,
       id: crypto.randomUUID(),
+      productId,
+      userProductId: productId,
       createdAt: new Date(),
       updatedAt: new Date(),
-    } as InventoryItem;
+    } as unknown as InventoryItem;
     this.inventory.push(newItem);
     return newItem;
   }
 
   async findById(id: string): Promise<InventoryItem | null> {
-    return this.inventory.find(item => item.id === id) || null;
+    const item = this.inventory.find(item => item.id === id) || null;
+    if (item) {
+      (item as any).userProductId = item.productId;
+    }
+    return item;
   }
 
   async findAll(): Promise<InventoryItem[]> {
+    this.inventory.forEach(item => {
+      (item as any).userProductId = item.productId;
+    });
     return this.inventory;
   }
 
   async update(id: string, data: Partial<InventoryItem>): Promise<InventoryItem> {
     const index = this.inventory.findIndex(item => item.id === id);
-    if (index === -1) throw new Error('Inventory item not found');
+    if (index === -1) throw new Error(`Không tìm thấy vật phẩm với id ${id}`);
     
-    this.inventory[index] = { ...this.inventory[index], ...data, updatedAt: new Date() };
+    const cleanData: any = { ...data };
+    const productId = cleanData.productId ?? cleanData.userProductId ?? this.inventory[index].productId;
+
+    this.inventory[index] = {
+      ...this.inventory[index],
+      ...data,
+      productId,
+      userProductId: productId,
+      updatedAt: new Date()
+    } as unknown as InventoryItem;
     return this.inventory[index];
   }
 
   async delete(id: string): Promise<boolean> {
-    const initialLength = this.inventory.length;
-    this.inventory = this.inventory.filter(item => item.id !== id);
-    return this.inventory.length < initialLength;
+    const index = this.inventory.findIndex(item => item.id === id);
+    if (index === -1) return false;
+    this.inventory.splice(index, 1);
+    return true;
   }
 
   async findAllByUserId(userId: string): Promise<InventoryItem[]> {
-    return this.inventory.filter(item => item.userId === userId);
+    const items = this.inventory.filter(item => item.userId === userId);
+    items.forEach(item => {
+      (item as any).userProductId = item.productId;
+    });
+    return items;
   }
 
   async findByProduct(productId: string): Promise<InventoryItem[]> {
-    return this.inventory.filter(item => item.userProductId === productId);
+    const items = this.inventory.filter(item => item.productId === productId || (item as any).userProductId === productId);
+    items.forEach(item => {
+      (item as any).userProductId = item.productId;
+    });
+    return items;
   }
 }
 

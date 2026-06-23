@@ -32,19 +32,6 @@ const ADD_FOOD_CATEGORY_LABELS: Record<AddFoodCategory, string> = {
   other: "Khác",
 };
 
-const FOOD_CATEGORY_LABELS: Record<FoodCategory, string> = {
-  dairy: "Sữa và sản phẩm từ sữa",
-  meat_poultry: "Thịt / gia cầm",
-  seafood: "Hải sản",
-  vegetables: "Rau củ",
-  fruits: "Trái cây",
-  eggs: "Trứng",
-  sauces_spices: "Nước sốt / gia vị",
-  drinks: "Đồ uống",
-  frozen_food: "Thực phẩm đông lạnh",
-  snacks: "Đồ ăn vặt",
-  others: "Khác",
-};
 
 const STATUS_META: Record<FoodStatus, Omit<FoodStatusMeta, "status">> = {
   fresh: {
@@ -123,9 +110,9 @@ export function mapFoodApiRecordToViewModel(
     productName: product?.name,
     category,
     categoryLabel: getCategoryLabel(displayCategory, category),
-    company: product?.company,
-    barcode: product?.barcode,
-    imageUrl: product?.imageUrl,
+    company: product?.company ?? undefined,
+    barcode: product?.barcode ?? undefined,
+    imageUrl: product?.imageUrl ?? undefined,
     openedAt,
     expiryDate,
     hasExplicitExpiryDate,
@@ -223,7 +210,7 @@ function getCategoryLabel(
   category?: FoodCategory
 ) {
   if (displayCategory) return ADD_FOOD_CATEGORY_LABELS[displayCategory];
-  if (category) return FOOD_CATEGORY_LABELS[category];
+  if (category) return category.name;
   return "Chưa phân nhóm";
 }
 

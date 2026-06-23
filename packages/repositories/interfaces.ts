@@ -10,10 +10,24 @@ export interface IBaseRepository<T, CreateDTO, UpdateDTO> {
   delete(id: string): Promise<boolean>;
 }
 
+export type CreateProductDTO = Omit<Product, 'id' | 'shelfLifeUnopenedDays' | 'shelfLifeOpenedDays' | 'freshDays' | 'earlyConsumptionDays' | 'checkBeforeUseDays' | 'storageLocation' | 'isQualified'> & {
+  shelfLifeUnopenedDays?: number;
+  shelfLifeOpenedDays?: number;
+  freshDays?: number;
+  earlyConsumptionDays?: number;
+  checkBeforeUseDays?: number;
+  storageLocation?: 'fridge' | 'freezer' | 'room_temp';
+  isQualified?: boolean;
+  daysBeforeOpen?: number;
+  daysAfterOpen?: number;
+  category?: any;
+  company?: string;
+};
+
 /**
  * Product Repository Interface
  */
-export interface IProductRepository extends IBaseRepository<Product, Omit<Product, 'id'>, Partial<Product>> {
+export interface IProductRepository extends IBaseRepository<Product, CreateProductDTO, Partial<Product>> {
   findByBarcode(barcode: string): Promise<Product | null>;
   findByOwner(ownerId: string): Promise<Product[]>;
   findGlobal(): Promise<Product[]>;

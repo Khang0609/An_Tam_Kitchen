@@ -21,7 +21,6 @@ model User {
   updatedAt      DateTime        @updatedAt
   posts          Post[]
   inventoryItems InventoryItem[]
-  userProducts   UserProduct[]
 }
 
 model Post {
@@ -74,27 +73,33 @@ model Category {
 }
 
 model Product {
-  id                    String   @id @default(uuid(7))
-  categoryId            String
-  category              Category @relation(fields: [categoryId], references: [id])
-  companyId             String
-  company               Company  @relation(fields: [companyId], references: [id])
+  id                    String          @id @default(uuid(7))
+  categoryId            String?
+  category              Category?       @relation(fields: [categoryId], references: [id])
+  companyId             String?
+  company               Company?        @relation(fields: [companyId], references: [id])
   name                  String
-  barcode               String
-  shelfLifeUnopenedDays Int
-  shelfLifeOpenedDays   Int
-  freshDays             Int
-  earlyConsumptionDays  Int
-  checkBeforeUseDays    Int
+  barcode               String?
+  shelfLifeUnopenedDays Int             @default(30)
+  shelfLifeOpenedDays   Int             @default(7)
+  freshDays             Int             @default(3)
+  earlyConsumptionDays  Int             @default(2)
+  checkBeforeUseDays    Int             @default(1)
   spoiledSign           String?
+  imageUrl              String?
+  storageLocation       StorageLocation @default(fridge)
+  isQualified           Boolean         @default(false)
+  createdAt             DateTime        @default(now())
+  updatedAt             DateTime        @updatedAt
+  inventoryItems        InventoryItem[]
 }
 
 model InventoryItem {
   id            String             @id @default(uuid(7))
   userId        String
   user          User               @relation(fields: [userId], references: [id])
-  userProductId String
-  userProduct   UserProduct        @relation(fields: [userProductId], references: [id])
+  productId     String
+  product       Product            @relation(fields: [productId], references: [id])
   displayName   String
   openedAt      DateTime?
   expiryDate    DateTime
@@ -115,22 +120,4 @@ model FoodNotification {
   message         String
   isRead          Boolean          @default(false)
   createdAt       DateTime         @default(now())
-}
-
-model UserProduct {
-  id              String          @id @default(uuid(7))
-  userId          String
-  user            User            @relation(fields: [userId], references: [id])
-  name            String
-  company         String          @default("Unknown")
-  barcode         String?
-  category        String
-  imageUrl        String?
-  storageLocation String          @map("storage_location")
-  daysBeforeOpen  Int             @default(30)
-  daysAfterOpen   Int             @default(7)
-  note            String?
-  inventoryItems  InventoryItem[]
-  createdAt       DateTime        @default(now())
-  updatedAt       DateTime        @updatedAt
 }

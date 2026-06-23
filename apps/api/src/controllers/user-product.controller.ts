@@ -39,7 +39,7 @@ export class UserProductController {
 
   delete = async (req: Request, res: Response) => {
     try {
-      const { id } = req.params;
+      const { id } = req.params as { id: string };
       const success = await this.userProductRepository.delete(id);
       if (success) {
         res.status(204).send();
